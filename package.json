@@ -1,5 +1,5 @@
 {
-  "name": "nextrap-element-image",
+  "name": "@nextrap/element-image",
   "version": "1.0.0",
   "description": "A versatile image component with support for cropping, slideshows, and fullscreen viewing",
   "main": "dist/nextrap-element-image.umd.js",
