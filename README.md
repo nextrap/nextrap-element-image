@@ -168,22 +168,55 @@ The component is designed to work in all modern browsers that support Web Compon
 
 ## Development
 
-The project structure:
+The project uses modern web development tools and practices:
+
+- **Vite** for fast development and building
+- **TypeScript** for type safety
+- **Storybook** for component development and documentation
+- **Web Components** for framework-agnostic usage
+
+### Project Structure
 ```
 src/
 ├── index.ts           # Main entry point
+├── stories/          # Storybook stories and documentation
 └── image/
     ├── nxa-image.ts           # Core component implementation
     ├── style.ts              # Styling definitions
-    ├── doc.ts                # Documentation
     ├── nxa-image.utils.ts    # Utility functions
     ├── nxa-image.types.ts    # TypeScript type definitions
-    └── nxa-image.test.js     # Component tests
+    ├── nxa-image.test.js     # Component tests
+    ├── pixel-matrix.png      # Test image asset
+    └── README.md             # Component-specific documentation
 ```
+
+### Development Setup
+
+1. Clone the repository
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+3. Start the development server:
+   ```bash
+   npm run dev
+   ```
+4. View Storybook documentation:
+   ```bash
+   npm run storybook
+   ```
+5. Run tests:
+   ```bash
+   npm test
+   ```
 
 ## License
 
-[License information to be added]
+This project is licensed under the terms specified in the [LICENSE.txt](LICENSE.txt) file.
+
+## Release Notes
+
+For detailed information about changes in each version, please refer to the [RELEASE_NOTES.md](RELEASE_NOTES.md) file.
 
 ## Contributing
 

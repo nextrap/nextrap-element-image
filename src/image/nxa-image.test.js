@@ -1,30 +1,29 @@
-import {describe, it} from 'node:test';
-import assert from 'node:assert';
+import {describe, it, expect} from 'vitest';
 import {JSDOM} from 'jsdom';
-import {calculateScaleFactor, cropImage, cssToJson, parseValue} from './nxa-image.utils.js';
+import {calculateScaleFactor, cropImage, cssToJson, parseValue} from './nxa-image.utils.ts';
 
-describe('cssToJson', async (t) => {
-    it('should convert CSS string to JSON object', async (t) => {
+describe('cssToJson', () => {
+    it('should convert CSS string to JSON object', () => {
         const input = 'top: 10%; bottom: 20%';
         const expected = {top: '10%', bottom: '20%'};
-        assert.deepStrictEqual(cssToJson(input), expected);
+        expect(cssToJson(input)).toEqual(expected);
     });
 
-    it('should handle empty string', async (t) => {
-        assert.deepStrictEqual(cssToJson(''), {});
+    it('should handle empty string', () => {
+        expect(cssToJson('')).toEqual({});
     });
 
-    it('should handle undefined', async (t) => {
-        assert.deepStrictEqual(cssToJson(undefined), {});
+    it('should handle undefined', () => {
+        expect(cssToJson(undefined)).toEqual({});
     });
 
-    it('should handle string with semicolons', async (t) => {
+    it('should handle string with semicolons', () => {
         const input = 'top: 10%; bottom: 20%; left: 30%';
         const expected = {top: '10%', bottom: '20%', left: '30%'};
-        assert.deepStrictEqual(cssToJson(input), expected);
+        expect(cssToJson(input)).toEqual(expected);
     });
 
-    it('should handle various CSS style strings', async (t) => {
+    it('should handle various CSS style strings', () => {
         const testCases = [
             // Basic positioning
             'left: 50px; top: 20px',
@@ -71,12 +70,11 @@ describe('cssToJson', async (t) => {
         ];
 
         testCases.forEach((input, index) => {
-            assert.deepStrictEqual(cssToJson(input), expected[index]);
+            expect(cssToJson(input)).toEqual(expected[index]);
         });
     });
 
-    // Add these test cases to your existing test file
-    it('should handle malformed input', async (t) => {
+    it('should handle malformed input', () => {
         const testCases = [
             // Missing values
             'top:; bottom: 20%',
@@ -120,13 +118,13 @@ describe('cssToJson', async (t) => {
         ];
 
         testCases.forEach((input, index) => {
-            assert.deepStrictEqual(cssToJson(input), expected[index]);
+            expect(cssToJson(input)).toEqual(expected[index]);
         });
     });
 });
 
-describe('parseValue', async (t) => {
-    it('should correctly parse percentage values', async (t) => {
+describe('parseValue', () => {
+    it('should correctly parse percentage values', () => {
         const testCases = [
             {input: '10%', expected: {value: 10, unit: '%'}},
             {input: '0%', expected: {value: 0, unit: '%'}},
@@ -137,11 +135,11 @@ describe('parseValue', async (t) => {
 
         testCases.forEach(({input, expected}) => {
             const result = parseValue(input);
-            assert.deepStrictEqual(result, expected, `Parsing ${input} should give ${JSON.stringify(expected)}`);
+            expect(result).toEqual(expected, `Parsing ${input} should give ${JSON.stringify(expected)}`);
         });
     });
 
-    it('should correctly parse pixel values', async (t) => {
+    it('should correctly parse pixel values', () => {
         const testCases = [
             {input: '10px', expected: {value: 10, unit: 'px'}},
             {input: '0px', expected: {value: 0, unit: 'px'}},
@@ -152,11 +150,11 @@ describe('parseValue', async (t) => {
 
         testCases.forEach(({input, expected}) => {
             const result = parseValue(input);
-            assert.deepStrictEqual(result, expected, `Parsing ${input} should give ${JSON.stringify(expected)}`);
+            expect(result).toEqual(expected, `Parsing ${input} should give ${JSON.stringify(expected)}`);
         });
     });
 
-    it('should correctly parse other CSS unit values', async (t) => {
+    it('should correctly parse other CSS unit values', () => {
         const testCases = [
             {input: '1em', expected: {value: 1, unit: 'em'}},
             {input: '2.5rem', expected: {value: 2.5, unit: 'rem'}},
@@ -166,11 +164,11 @@ describe('parseValue', async (t) => {
 
         testCases.forEach(({input, expected}) => {
             const result = parseValue(input);
-            assert.deepStrictEqual(result, expected, `Parsing ${input} should give ${JSON.stringify(expected)}`);
+            expect(result).toEqual(expected, `Parsing ${input} should give ${JSON.stringify(expected)}`);
         });
     });
 
-    it('should handle numeric values without units', async (t) => {
+    it('should handle numeric values without units', () => {
         const testCases = [
             {input: '10', expected: {value: 10, unit: '%'}},
             {input: '0', expected: {value: 0, unit: '%'}},
@@ -180,11 +178,11 @@ describe('parseValue', async (t) => {
 
         testCases.forEach(({input, expected}) => {
             const result = parseValue(input);
-            assert.deepStrictEqual(result, expected, `Parsing ${input} should give ${JSON.stringify(expected)}`);
+            expect(result).toEqual(expected, `Parsing ${input} should give ${JSON.stringify(expected)}`);
         });
     });
 
-    it('should handle invalid or missing values', async (t) => {
+    it('should handle invalid or missing values', () => {
         const testCases = [
             {input: undefined, expected: {value: 0, unit: '%'}},
             {input: '', expected: {value: 0, unit: '%'}},
@@ -196,11 +194,11 @@ describe('parseValue', async (t) => {
 
         testCases.forEach(({input, expected}) => {
             const result = parseValue(input);
-            assert.deepStrictEqual(result, expected, `Parsing ${input} should give ${JSON.stringify(expected)}`);
+            expect(result).toEqual(expected, `Parsing ${input} should give ${JSON.stringify(expected)}`);
         });
     });
 
-    it('should handle edge cases', async (t) => {
+    it('should handle edge cases', () => {
         const testCases = [
             {input: '0.001px', expected: {value: 0.001, unit: 'px'}},
             {input: '1000000%', expected: {value: 1000000, unit: '%'}},
@@ -209,12 +207,12 @@ describe('parseValue', async (t) => {
 
         testCases.forEach(({input, expected}) => {
             const result = parseValue(input);
-            assert.deepStrictEqual(result, expected, `Parsing ${input} should give ${JSON.stringify(expected)}`);
+            expect(result).toEqual(expected, `Parsing ${input} should give ${JSON.stringify(expected)}`);
         });
     });
 });
 
-describe('cropImage', (t) => {
+describe('cropImage', () => {
     // Setup function to create a clean DOM environment for each test
     const setupDom = () => {
         const dom = new JSDOM(`<!DOCTYPE html><html><body></body></html>`, {
@@ -242,116 +240,116 @@ describe('cropImage', (t) => {
         delete global.HTMLImageElement;
     };
 
-    it('should set object-fit to cover for all cases', (t) => {
+    it('should set object-fit to cover for all cases', () => {
         const {child} = setupDom();
         try {
             cropImage(child, {}, {width: '100px', height: '100px'});
-            assert.strictEqual(child.style.objectFit, 'cover');
+            expect(child.style.objectFit).toEqual('cover');
         }
         finally {
             cleanup();
         }
     });
 
-    it('should set object-position when provided', (t) => {
+    it('should set object-position when provided', () => {
         const {child} = setupDom();
         try {
             cropImage(child, {position: 'left top'}, {width: '100px', height: '100px'});
-            assert.strictEqual(child.style.objectPosition, 'left top');
+            expect(child.style.objectPosition).toEqual('left top');
         }
         finally {
             cleanup();
         }
     });
 
-    it('should create clip-path for percentage crop values', (t) => {
+    it('should create clip-path for percentage crop values', () => {
         const {child} = setupDom();
         try {
             const cropData = {top: '10%', right: '20%', bottom: '30%', left: '40%'};
             cropImage(child, cropData, {width: '100px', height: '100px'});
 
             const clipPath = child.style.clipPath;
-            assert.ok(clipPath.includes('40% 10%'), 'Clip path should include top-left coordinate');
-            assert.ok(clipPath.includes('80% 10%'), 'Clip path should include top-right coordinate (100 - 20)');
-            assert.ok(clipPath.includes('80% 70%'), 'Clip path should include bottom-right coordinate (100 - 30)');
-            assert.ok(clipPath.includes('40% 70%'), 'Clip path should include bottom-left coordinate');
+            expect(clipPath.includes('40% 10%')).toBeTruthy();
+            expect(clipPath.includes('80% 10%')).toBeTruthy();
+            expect(clipPath.includes('80% 70%')).toBeTruthy();
+            expect(clipPath.includes('40% 70%')).toBeTruthy();
 
             // For percentage values, width and height should be 100%
-            assert.strictEqual(child.style.width, '100%');
-            assert.strictEqual(child.style.height, '100%');
+            expect(child.style.width).toEqual('100%');
+            expect(child.style.height).toEqual('100%');
         }
         finally {
             cleanup();
         }
     });
 
-    it('should create clip-path for pixel crop values', (t) => {
+    it('should create clip-path for pixel crop values', () => {
         const {child} = setupDom();
         try {
             const cropData = {top: '10px', right: '20px', bottom: '30px', left: '40px'};
             cropImage(child, cropData, {width: '100px', height: '100px'});
 
             const clipPath = child.style.clipPath;
-            assert.ok(clipPath.includes('40px 10px'), 'Clip path should include top-left coordinate');
-            assert.ok(clipPath.includes('calc(100% - 20px) 10px'), 'Clip path should include top-right coordinate');
-            assert.ok(clipPath.includes('calc(100% - 20px) calc(100% - 30px)'), 'Clip path should include bottom-right coordinate');
-            assert.ok(clipPath.includes('40px calc(100% - 30px)'), 'Clip path should include bottom-left coordinate');
+            expect(clipPath.includes('40px 10px')).toBeTruthy();
+            expect(clipPath.includes('calc(100% - 20px) 10px')).toBeTruthy();
+            expect(clipPath.includes('calc(100% - 20px) calc(100% - 30px)')).toBeTruthy();
+            expect(clipPath.includes('40px calc(100% - 30px)')).toBeTruthy();
         }
         finally {
             cleanup();
         }
     });
 
-    it('should set correct width and height for pixel crops', (t) => {
+    it('should set correct width and height for pixel crops', () => {
         const {child} = setupDom();
         try {
             const cropData = {top: '10px', right: '20px', bottom: '30px', left: '40px'};
             cropImage(child, cropData, {width: '100px', height: '100px'});
 
-            assert.strictEqual(child.style.width, 'calc(100% + 40px + 20px)');
-            assert.strictEqual(child.style.height, 'calc(100% + 10px + 30px)');
+            expect(child.style.width).toEqual('calc(100% + 40px + 20px)');
+            expect(child.style.height).toEqual('calc(100% + 10px + 30px)');
         }
         finally {
             cleanup();
         }
     });
 
-    it('should set correct margins for pixel crops', (t) => {
+    it('should set correct margins for pixel crops', () => {
         const {child} = setupDom();
         try {
             const cropData = {top: '10px', right: '20px', bottom: '30px', left: '40px'};
             cropImage(child, cropData, {width: '100px', height: '100px'});
 
-            assert.strictEqual(child.style.marginTop, '-10px');
-            assert.strictEqual(child.style.marginRight, '-20px');
-            assert.strictEqual(child.style.marginBottom, '-30px');
-            assert.strictEqual(child.style.marginLeft, '-40px');
+            expect(child.style.marginTop).toEqual('-10px');
+            expect(child.style.marginRight).toEqual('-20px');
+            expect(child.style.marginBottom).toEqual('-30px');
+            expect(child.style.marginLeft).toEqual('-40px');
         }
         finally {
             cleanup();
         }
     });
 
-    it('should handle mixed unit crop values', (t) => {
+    it('should handle mixed unit crop values', () => {
         const {child} = setupDom();
         try {
             const cropData = {top: '10%', right: '20px', bottom: '30%', left: '40px'};
             cropImage(child, cropData, {width: '100px', height: '100px'});
 
-            assert.strictEqual(child.style.marginTop, '-10%');
-            assert.strictEqual(child.style.marginRight, '-20px');
-            assert.strictEqual(child.style.marginBottom, '-30%');
-            assert.strictEqual(child.style.marginLeft, '-40px');
+            expect(child.style.marginTop).toEqual('-10%');
+            expect(child.style.marginRight).toEqual('-20px');
+            expect(child.style.marginBottom).toEqual('-30%');
+            expect(child.style.marginLeft).toEqual('-40px');
 
-            assert.strictEqual(child.style.width, 'calc(100% + 40px + 20px)');
-            assert.strictEqual(child.style.height, 'calc(140%)');
+            expect(child.style.width).toEqual('calc(100% + 40px + 20px)');
+            expect(child.style.height).toEqual('calc(140%)');
         }
         finally {
             cleanup();
         }
     });
 
-    it('should apply transform scale based on crop dimensions', (t) => {
+    it('should apply transform scale based on crop dimensions', () => {
         const {child} = setupDom();
         try {
             // Mock window.innerWidth/Height which are used in calculateScaleFactor
@@ -362,28 +360,28 @@ describe('cropImage', (t) => {
             cropImage(child, cropData, {width: '100px', height: '100px'});
 
             // Scale factor should be 1.25 (100 / (100 - 10 - 10))
-            assert.ok(child.style.transform.includes('scale(1.25)'));
+            expect(child.style.transform.includes('scale(1.25)')).toBeTruthy();
         }
         finally {
             cleanup();
         }
     });
 
-    it('should set transform-origin based on object-position', (t) => {
+    it('should set transform-origin based on object-position', () => {
         const {child} = setupDom();
         try {
             cropImage(child, {position: 'left top'}, {width: '100px', height: '100px'});
-            assert.strictEqual(child.style.transformOrigin, 'left top');
+            expect(child.style.transformOrigin).toEqual('left top');
 
             cropImage(child, {position: 'center center'}, {width: '100px', height: '100px'});
-            assert.strictEqual(child.style.transformOrigin, 'center center');
+            expect(child.style.transformOrigin).toEqual('center center');
         }
         finally {
             cleanup();
         }
     });
 
-    it('should apply additional transform when specified in cropData', (t) => {
+    it('should apply additional transform when specified in cropData', () => {
         const {child} = setupDom();
         try {
             cropImage(child, {
@@ -394,43 +392,44 @@ describe('cropImage', (t) => {
                 transform: 'rotate(45deg)'
             }, {width: '100px', height: '100px'});
 
-            assert.ok(child.style.transform.includes('scale(') && child.style.transform.includes('rotate(45deg)'));
+            expect(child.style.transform.includes('scale(')).toBeTruthy();
+            expect(child.style.transform.includes('rotate(45deg)')).toBeTruthy();
         }
         finally {
             cleanup();
         }
     });
 
-    it('should handle empty cropData without errors', (t) => {
+    it('should handle empty cropData without errors', () => {
         const {child} = setupDom();
         try {
             cropImage(child, {}, {width: '100px', height: '100px'});
 
             // Scale should default to 1
-            assert.ok(child.style.transform.includes('scale(1)'));
+            expect(child.style.transform.includes('scale(1)')).toBeTruthy();
 
             // Default transform-origin should be 'center center'
-            assert.strictEqual(child.style.transformOrigin, 'center center');
+            expect(child.style.transformOrigin).toEqual('center center');
         }
         finally {
             cleanup();
         }
     });
 
-    it('should handle different reference sizes', (t) => {
+    it('should handle different reference sizes', () => {
         const {child} = setupDom();
         try {
             cropImage(child, {top: '10%', right: '10%', bottom: '10%', left: '10%'}, {width: '200px', height: '100px'});
 
             // Scale factor should still be 1.25
-            assert.ok(child.style.transform.includes('scale(1.25)'));
+            expect(child.style.transform.includes('scale(1.25)')).toBeTruthy();
         }
         finally {
             cleanup();
         }
     });
 
-    it('should handle reference sizes with different units', (t) => {
+    it('should handle reference sizes with different units', () => {
         const {child} = setupDom();
         try {
             global.window.innerWidth = 1000;
@@ -439,7 +438,7 @@ describe('cropImage', (t) => {
             cropImage(child, {top: '10%', right: '10%', bottom: '10%', left: '10%'}, {width: '50vw', height: '50vh'});
 
             // Scale factor should still be 1.25
-            assert.ok(child.style.transform.includes('scale(1.25)'));
+            expect(child.style.transform.includes('scale(1.25)')).toBeTruthy();
         }
         finally {
             cleanup();
@@ -447,7 +446,7 @@ describe('cropImage', (t) => {
     });
 });
 
-describe('calculateScaleFactor', (t) => {
+describe('calculateScaleFactor', () => {
     // Setup function to create a clean DOM environment for each test
     const setupDom = () => {
         const dom = new JSDOM(`<!DOCTYPE html><html><body></body></html>`, {
@@ -472,7 +471,7 @@ describe('calculateScaleFactor', (t) => {
         delete global.document;
     };
 
-    it('should calculate correct scale factor for percentage values', (t) => {
+    it('should calculate correct scale factor for percentage values', () => {
         const {dom} = setupDom();
         try {
             // Test with standard crop values
@@ -480,14 +479,14 @@ describe('calculateScaleFactor', (t) => {
             const scaleFactor = calculateScaleFactor(cropData);
 
             // Expected scale factor: 100 / (100 - 10 - 10) = 1.25
-            assert.strictEqual(scaleFactor, 1.25);
+            expect(scaleFactor).toEqual(1.25);
         }
         finally {
             cleanup();
         }
     });
 
-    it('should calculate correct scale factor for pixel values', (t) => {
+    it('should calculate correct scale factor for pixel values', () => {
         const {dom} = setupDom();
         try {
             // Test with pixel values
@@ -496,14 +495,14 @@ describe('calculateScaleFactor', (t) => {
             const scaleFactor = calculateScaleFactor(cropData, referenceSize);
 
             // Expected scale factor: 500 / (500 - 50 - 50) = 1.25
-            assert.strictEqual(scaleFactor, 1.25);
+            expect(scaleFactor).toEqual(1.25);
         }
         finally {
             cleanup();
         }
     });
 
-    it('should handle mixed units correctly', (t) => {
+    it('should handle mixed units correctly', () => {
         const {dom} = setupDom();
         try {
             // Test with mixed units
@@ -515,14 +514,14 @@ describe('calculateScaleFactor', (t) => {
             // Choose max of both = 1.25
             const scaleFactor = calculateScaleFactor(cropData, referenceSize);
 
-            assert.strictEqual(scaleFactor, 1.25);
+            expect(scaleFactor).toEqual(1.25);
         }
         finally {
             cleanup();
         }
     });
 
-    it('should handle different aspect ratios', (t) => {
+    it('should handle different aspect ratios', () => {
         const {dom} = setupDom();
         try {
             // Test with non-square reference size
@@ -535,14 +534,14 @@ describe('calculateScaleFactor', (t) => {
             const scaleFactor = calculateScaleFactor(cropData, referenceSize);
 
             // Allow small floating point differences
-            assert.ok(Math.abs(scaleFactor - 1.67) < 0.01);
+            expect(Math.abs(scaleFactor - 1.67) < 0.01).toBeTruthy();
         }
         finally {
             cleanup();
         }
     });
 
-    it('should handle viewport relative units (vh, vw)', (t) => {
+    it('should handle viewport relative units (vh, vw)', () => {
         const {dom} = setupDom();
         try {
             global.window.innerWidth = 1000;
@@ -556,14 +555,14 @@ describe('calculateScaleFactor', (t) => {
             // Scale factor = 1.25
             const scaleFactor = calculateScaleFactor(cropData, referenceSize);
 
-            assert.strictEqual(scaleFactor, 1.25);
+            expect(scaleFactor).toEqual(1.25);
         }
         finally {
             cleanup();
         }
     });
 
-    it('should return 1 when no crop values are provided', (t) => {
+    it('should return 1 when no crop values are provided', () => {
         const {dom} = setupDom();
         try {
             const cropData = {};
@@ -571,14 +570,14 @@ describe('calculateScaleFactor', (t) => {
 
             const scaleFactor = calculateScaleFactor(cropData, referenceSize);
 
-            assert.strictEqual(scaleFactor, 1);
+            expect(scaleFactor).toEqual(1);
         }
         finally {
             cleanup();
         }
     });
 
-    it('should handle zero or negative visible area with percentage values', (t) => {
+    it('should handle zero or negative visible area with percentage values', () => {
         const {dom} = setupDom();
         try {
             // Test with crop values that would result in no visible area
@@ -587,14 +586,14 @@ describe('calculateScaleFactor', (t) => {
             const scaleFactor = calculateScaleFactor(cropData);
 
             // Should return 1 for zero visible area (avoid division by zero)
-            assert.strictEqual(scaleFactor, 1);
+            expect(scaleFactor).toEqual(1);
         }
         finally {
             cleanup();
         }
     });
 
-    it('should handle zero or negative visible area with pixel values', (t) => {
+    it('should handle zero or negative visible area with pixel values', () => {
         const {dom} = setupDom();
         try {
             // Test with crop values that would result in no visible area
@@ -604,29 +603,29 @@ describe('calculateScaleFactor', (t) => {
             const scaleFactor = calculateScaleFactor(cropData, referenceSize);
 
             // Should return 1 for zero or negative visible area
-            assert.strictEqual(scaleFactor, 1);
+            expect(scaleFactor).toEqual(1);
         }
         finally {
             cleanup();
         }
     });
 
-    it('should handle missing reference size for pixel values', (t) => {
+    it('should handle missing reference size for pixel values', () => {
         const {dom} = setupDom();
         try {
             const cropData = {top: '50px', right: '50px', bottom: '50px', left: '50px'};
 
-            // When reference size is missing, should return empty string
+            // When reference size is missing, should return 1
             const scaleFactor = calculateScaleFactor(cropData);
 
-            assert.strictEqual(scaleFactor, "");
+            expect(scaleFactor).toEqual(1);
         }
         finally {
             cleanup();
         }
     });
 
-    it('should handle oversized crop values', (t) => {
+    it('should handle oversized crop values', () => {
         const {dom} = setupDom();
         try {
             // Test with very large crop values
@@ -635,14 +634,14 @@ describe('calculateScaleFactor', (t) => {
             const scaleFactor = calculateScaleFactor(cropData);
 
             // Should default to 1 for impossible scaling
-            assert.strictEqual(scaleFactor, 1);
+            expect(scaleFactor).toEqual(1);
         }
         finally {
             cleanup();
         }
     });
 
-    it('should handle negative crop values', (t) => {
+    it('should handle negative crop values', () => {
         try {
             // Test with negative crop values (which would expand rather than crop)
             const cropData = {top: '-10%', right: '-10%', bottom: '-10%', left: '-10%'};
@@ -651,7 +650,7 @@ describe('calculateScaleFactor', (t) => {
 
             // With negative values: visible area is 120%, scale = 100/120 = 0.83
             // But we use Math.max(scaleX, scaleY, 1) to not scale down below 1
-            assert.strictEqual(scaleFactor, 1);
+            expect(scaleFactor).toEqual(1);
         }
         finally {
             cleanup();
