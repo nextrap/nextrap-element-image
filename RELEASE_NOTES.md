@@ -10,28 +10,38 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Initial release of the Nextrap Element Image component
 - Core image component with flexible positioning capabilities
-- Slideshow functionality with blend effects
-- Fullsize image viewing with modal support
+- Slideshow functionality with navigation controls
+- Fullsize image viewing with modal support and blurred background
 - Virtual image cropping with percentage-based dimensions
 - Touch support with swipe detection
 - Responsive aspect ratio handling
 - Caption support via alt text and data-caption attributes
+- Rounded border support
+- Pause-on-hover functionality for slideshows
+- Custom event system for fullsize view and slide changes
+- CSS custom properties for styling customization
+- Comprehensive slot system for image management
 
 ### Features
 - Image positioning control (top, bottom, left, right, center)
-- Slideshow navigation (left/right)
-- Blend effects between slides
+- Slideshow navigation (left/right) with indicators
 - Fullscreen modal view with blurred background
-- Virtual image cropping
+- Virtual image cropping with percentage-based dimensions
 - Mobile-friendly swipe detection
 - Responsive design support
+- Rounded border customization
+- Slideshow pause-on-hover functionality
+- Custom event system for integration
+- CSS custom properties for styling
 
 ### Technical Details
-- Web Components based implementation
+- Web Components based implementation using Lit
 - TypeScript support
 - Modular architecture with separate utility functions
 - Comprehensive test coverage
 - Documentation and type definitions
+- Custom event system for component interaction
+- CSS custom properties for styling flexibility
 
 ## Version Categories
 
