@@ -2,8 +2,8 @@
   "name": "@nextrap/image",
   "version": "1.0.0",
   "description": "A versatile image component with support for cropping, slideshows, and fullscreen viewing",
-  "main": "dist/nextrap-element-image.umd.js",
-  "module": "dist/nextrap-element-image.es.js",
+  "main": "dist/nextrap-image.umd.js",
+  "module": "dist/nextrap-image.es.js",
   "types": "dist/index.d.ts",
   "files": [
     "dist"
