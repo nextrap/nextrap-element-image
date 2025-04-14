@@ -1,6 +1,11 @@
 # Release Notes
 
-## [Unreleased]
+All notable changes to the Nextrap Element Image project will be documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [1.0.0] - 2025-04-14 - Initial release
 
 ### Added
 - Initial release of the Nextrap Element Image component
@@ -28,5 +33,55 @@
 - Comprehensive test coverage
 - Documentation and type definitions
 
-## [0.1.0] - YYYY-MM-DD
-- Initial release 
+## Version Categories
+
+### Major Version (X.0.0)
+- Breaking changes that require user action
+- Major feature additions
+- Significant architectural changes
+
+### Minor Version (0.X.0)
+- New features in a backward-compatible manner
+- Enhancements to existing features
+- New utility functions or helpers
+
+### Patch Version (0.0.X)
+- Bug fixes
+- Performance improvements
+- Documentation updates
+- Minor improvements to existing features
+
+## Template for New Versions
+
+```markdown
+## [X.Y.Z] - YYYY-MM-DD
+
+### Added
+- New features or capabilities
+- New components or utilities
+- New documentation
+
+### Changed
+- Changes in existing functionality
+- Updates to existing features
+- Performance improvements
+
+### Deprecated
+- Soon-to-be removed features
+- Features that will be changed in future versions
+
+### Removed
+- Removed features
+- Removed dependencies
+- Cleanup of deprecated features
+
+### Fixed
+- Bug fixes
+- Security patches
+- Performance issues
+
+### Security
+- Security-related changes
+- Vulnerability fixes
+- Security improvements
+```

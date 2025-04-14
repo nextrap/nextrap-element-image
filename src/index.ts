@@ -1,1 +1,1 @@
-export { NxaNavbar } from './navbar/nxa-navbar'; 
+export { NxaImage } from './image/nxa-image';

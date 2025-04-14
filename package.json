@@ -1,0 +1,32 @@
+{
+  "name": "nextrap-element-image",
+  "version": "1.0.0",
+  "description": "A versatile image component with support for cropping, slideshows, and fullscreen viewing",
+  "main": "dist/nextrap-element-image.umd.js",
+  "module": "dist/nextrap-element-image.es.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "storybook": "storybook dev -p 6006",
+    "build-storybook": "storybook build",
+    "build": "vite build",
+    "dev": "vite",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "lit": "^3.0.0",
+    "@lit/reactive-element": "^2.0.0",
+    "@lit-labs/ssr": "^3.0.0"
+  },
+  "devDependencies": {
+    "@chromatic-com/storybook": "^3.2.6",
+    "@storybook/addon-essentials": "^8.6.12",
+    "@storybook/addon-interactions": "^8.6.12",
+    "@storybook/addon-links": "^8.6.12",
+    "@storybook/blocks": "^8.6.12",
+    "@storybook/web-components": "^8.6.12",
+    "@storybook/web-components-vite": "^8.6.12",
+    "@types/node": "^22.14.1",
+    "typescript": "^5.0.0",
+    "vite": "^5.0.0"
+  }
+}

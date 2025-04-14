@@ -7,7 +7,8 @@ import {
     getSlideshowStyles,
     detectMobileDevice
 } from "./nxa-image.utils";
-import {defaultSlideshowInterval, SlideShowConfig, SlideShowTransitions} from "./nxa-image.types";
+import {defaultSlideshowInterval, SlideShowTransitions} from "./nxa-image.types";
+import type { SlideShowConfig } from "./nxa-image.types";
 import {style} from "./style";
 
 /**
@@ -49,51 +50,48 @@ import {style} from "./style";
 export class NxaImage extends LitElement {
     static styles = style;
 
-    @property({type: Object})
+    @property({ type: Object })
     globalDataCrop: Record<string, string> = {};
 
-    @property({type: Array})
+    @property({ type: Array })
     childDataCrop: Record<string, string>[] = [];
 
-    @property({type: Array})
+    @property({ type: Array })
     dataFeatures: string[] = [];
 
-    @property({type: Object})
+    @property({ type: Object })
     slidesShowConfig: SlideShowConfig = {};
 
-    @property({type: Boolean})
-    fullSize = false;
+    @property({ type: Boolean })
+    fullSize: boolean = false;
 
-    @property({type: Boolean})
-    roundBorders = false;
+    @property({ type: Boolean })
+    roundBorders: boolean = false;
 
-    @property({type: Number})
-    interval?: number;
-
-    @state()
-    private slideInterval?: number;
+    @property({ type: Number })
+    interval: number = 0;
 
     @state()
-    private currentCaption?: string;
+    slideInterval: number = 0;
 
     @state()
-    private touchStartX: number = 0;
+    currentCaption: string = '';
 
     @state()
-    private touchStartY: number = 0;
+    touchStartX: number = 0;
 
     @state()
-    private isMobileDevice: boolean = false;
+    touchStartY: number = 0;
 
     @state()
-    private isPaused: boolean = false;
+    isMobileDevice: boolean = false;
 
     @state()
-    private slideProgress: number = 0;
+    isPaused: boolean = false;
 
-    /**
-     * Constructor initializes default dimensions if not explicitly set
-     */
+    @state()
+    slideProgress: number = 0;
+
     constructor() {
         super();
         if (!this.style.width) {
@@ -110,6 +108,12 @@ export class NxaImage extends LitElement {
      */
     connectedCallback() {
         super.connectedCallback();
+
+        // Initialize arrays and objects to ensure they exist
+        this.childDataCrop = [];
+        this.dataFeatures = [];
+        this.slidesShowConfig = {};
+        this.globalDataCrop = {};
 
         // Parse data-crop attribute
         this.globalDataCrop = cssToJson(this.getAttribute("data-crop") || "");
@@ -265,7 +269,7 @@ export class NxaImage extends LitElement {
         if (this.slidesShowConfig.enabled) {
             const activeSlide = this.querySelector("img.active") as HTMLImageElement;
             if (activeSlide) {
-                this.currentCaption = activeSlide.getAttribute("data-caption") || undefined;
+                this.currentCaption = activeSlide.getAttribute("data-caption") || '';
                 return;
             }
         }
@@ -273,7 +277,7 @@ export class NxaImage extends LitElement {
         // For non-slideshow, just get the first image's caption
         const firstImg = this.querySelector("img") as HTMLImageElement;
         if (firstImg) {
-            this.currentCaption = firstImg.getAttribute("data-caption") || undefined;
+            this.currentCaption = firstImg.getAttribute("data-caption") || '';
         }
     }
 

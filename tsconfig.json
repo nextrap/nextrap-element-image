@@ -1,28 +1,23 @@
 {
   "compilerOptions": {
-    "outDir": "./dist/",
-    "noImplicitAny": false,
-    "declaration": true,
-    "module": "es6",
-    "target": "es6",
-    "allowJs": true,
-    "esModuleInterop": true,
+    "target": "ES2020",
+    "useDefineForClassFields": true,
+    "module": "ESNext",
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "skipLibCheck": true,
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+    "types": ["vite/client"],
     "experimentalDecorators": true,
-
-
     "emitDecoratorMetadata": true,
-    "moduleResolution": "node",
-    "lib": [
-      "es2021",
-      "dom"
-    ],
-
+    "esModuleInterop": true
   },
-  "include": [
-    "src/**/*",
-    "*.ts"
-  ],
-  "exclude": [
-    "./test"
-  ]
+  "include": ["src"]
 }
