@@ -1,6 +1,4 @@
 import type { Preview } from "@storybook/web-components";
-import { fn } from '@storybook/test';
-import { setCustomElementsManifest } from '@storybook/web-components';
 import '../src/image/nxa-image';
 
 // Import your custom elements manifest if you have one
@@ -8,7 +6,7 @@ import '../src/image/nxa-image';
 
 const preview: Preview = {
   parameters: {
-    actions: { 
+    actions: {
       // Remove argTypesRegex and use fn() in individual stories instead
     },
     controls: {
@@ -34,4 +32,4 @@ const preview: Preview = {
 // If you have a custom elements manifest, uncomment this line
 // setCustomElementsManifest(customElements);
 
-export default preview; 
+export default preview;

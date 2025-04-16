@@ -15,7 +15,7 @@ import {style} from "./style";
  * NxaImage component - A versatile image display component with slideshow, fullscreen, and cropping capabilities.
  *
  * @element nxa-image
- * 
+ *
  * @attr {string} data-features - Space-separated list of features to enable. Supported values:
  *   - "slideshow" - Enables slideshow functionality
  *   - "fullsize" - Enables fullscreen view on click
@@ -24,23 +24,23 @@ import {style} from "./style";
  *   - "round-borders" - Applies rounded corners to the component
  *   - "blend" - Uses blend transition effect for slideshow TODO: Not implemented yet
  *   - "dont-pause-on-hover" - Prevents slideshow from pausing on hover
- * 
+ *
  * @attr {string} data-crop - Global crop settings applied to all images. Format: "top: value; right: value; bottom: value; left: value"
  *   Values can be in pixels (e.g., "10px") or percentages (e.g., "10%")
- * 
+ *
  * @attr {number} interval - Custom interval for slideshow transitions in milliseconds (default: 5000)
- * 
+ *
  * @csspart image-container - The container for the images
  * @csspart caption-container - The container for the caption
  * @csspart indicators - The container for the slideshow indicators
  * @csspart navigation-arrows - The container for the navigation arrows
- * 
+ *
  * @cssprop --nxa-image-border-radius - Border radius for rounded corners (default: 12px)
- * 
+ *
  * @fires nxa-image-fullsize-open - Fired when fullsize view is opened
  * @fires nxa-image-fullsize-close - Fired when fullsize view is closed
  * @fires nxa-image-slide-change - Fired when the active slide changes
- * 
+ *
  * @slot - Default slot for images. Each image can have the following attributes:
  *   - data-caption: Text caption for the image
  *   - data-crop: Individual crop settings for this image (overrides global settings)
@@ -51,34 +51,34 @@ export class NxaImage extends LitElement {
     static styles = style;
 
     @property({ type: Object })
-    globalDataCrop: Record<string, string> = {};
+     globalDataCrop: Record<string, string> = {};
 
     @property({ type: Array })
-    childDataCrop: Record<string, string>[] = [];
+     childDataCrop: Record<string, string>[] = [];
 
     @property({ type: Array })
-    dataFeatures: string[] = [];
+     dataFeatures: string[] = [];
 
     @property({ type: Object })
-    slidesShowConfig: SlideShowConfig = {};
+     slidesShowConfig: SlideShowConfig = {};
 
     @property({ type: Boolean })
-    fullSize: boolean = false;
+     fullSize: boolean = false;
 
     @property({ type: Boolean })
-    roundBorders: boolean = false;
+     roundBorders: boolean = false;
 
     @property({ type: Number })
-    interval: number = 0;
+     interval: number = 0;
 
     @state()
-    slideInterval: number = 0;
+     slideInterval: number = 0;
 
     @state()
-    currentCaption: string = '';
+     currentCaption: string = '';
 
     @state()
-    touchStartX: number = 0;
+     touchStartX: number = 0;
 
     @state()
     touchStartY: number = 0;

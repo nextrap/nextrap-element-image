@@ -34,7 +34,10 @@ export default defineConfig({
       target: 'esnext'
     }
   },
+    server: {
+      host: true
+    },
   esbuild: {
     target: 'esnext'
   }
-}); 
+});

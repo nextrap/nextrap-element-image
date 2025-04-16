@@ -203,6 +203,7 @@ src/
    ```
 4. View Storybook documentation:
    ```bash
+   apt install xdg-open
    npm run storybook
    ```
 5. Run tests:
