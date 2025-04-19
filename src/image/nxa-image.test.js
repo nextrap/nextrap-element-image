@@ -306,8 +306,8 @@ describe('cropImage', () => {
             const cropData = {top: '10px', right: '20px', bottom: '30px', left: '40px'};
             cropImage(child, cropData, {width: '100px', height: '100px'});
 
-            expect(child.style.width).toEqual('calc(100% + 40px + 20px)');
-            expect(child.style.height).toEqual('calc(100% + 10px + 30px)');
+            expect(child.style.width).toEqual('calc(100% + 60px)');
+            expect(child.style.height).toEqual('calc(100% + 40px)');
         }
         finally {
             cleanup();
@@ -341,7 +341,7 @@ describe('cropImage', () => {
             expect(child.style.marginBottom).toEqual('-30%');
             expect(child.style.marginLeft).toEqual('-40px');
 
-            expect(child.style.width).toEqual('calc(100% + 40px + 20px)');
+            expect(child.style.width).toEqual('calc(100% + 60px)');
             expect(child.style.height).toEqual('calc(140%)');
         }
         finally {
