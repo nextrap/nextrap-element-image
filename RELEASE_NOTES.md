@@ -5,6 +5,25 @@ All notable changes to the Nextrap Element Image project will be documented in t
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.0] - 2023-11-15 - Event Callbacks
+
+### Added
+- Six new event callbacks for enhanced component integration:
+  - `onSlideChange`: Triggered when the active slide changes
+  - `onFullscreenEnter`: Triggered when entering fullscreen mode
+  - `onFullscreenExit`: Triggered when exiting fullscreen mode
+  - `onSlideshowPause`: Triggered when the slideshow is paused
+  - `onSlideshowResume`: Triggered when the slideshow is resumed
+  - `onImageClick`: Triggered when an image is clicked
+- Comprehensive documentation and examples for all event callbacks
+- Automatic slideshow pause when fullsize image is shown
+
+### Changed
+- Updated README.md with new event callbacks documentation and usage examples
+- Improved Storybook stories to demonstrate event callback functionality
+- Relocated test image asset from src/image/ to .storybook/static/ directory
+- Enhanced event handling system for better performance and reliability
+
 ## [1.0.0] - 2025-04-14 - Initial release
 
 ### Added

@@ -104,7 +104,7 @@ A versatile image component with support for:
         .onImageClick=${args.onImageClick}
       >
         ${args.images.map(img => html`
-          <img 
+          <img
             src=${img.src}
             data-caption=${img.caption || ''}
             data-crop=${img.crop || ''}
@@ -118,8 +118,9 @@ A versatile image component with support for:
 export default meta;
 type Story = StoryObj<NxaImageArgs>;
 
-// Basic Usage
-export const SingleImage: Story = {
+// Basic Single Image Examples
+export const Basic_SingleImage: Story = {
+  name: 'Single Image/Basic',
   args: {
     images: [
       { src: 'https://picsum.photos/800/400?random=1', caption: 'Single image example' }
@@ -127,7 +128,8 @@ export const SingleImage: Story = {
   },
 };
 
-export const SingleImageNoCaption: Story = {
+export const Basic_SingleImageNoCaption: Story = {
+  name: 'Single Image/Without Caption',
   args: {
     images: [
       { src: 'https://picsum.photos/800/400?random=1' }
@@ -135,30 +137,32 @@ export const SingleImageNoCaption: Story = {
   },
 };
 
-export const MultipleImagesNoCaption: Story = {
+export const Basic_RoundedCorners: Story = {
+  name: 'Single Image/With Rounded Corners',
   args: {
+    'data-features': 'round-borders',
     images: [
-      { src: 'https://picsum.photos/800/400?random=1' },
-      { src: 'https://picsum.photos/800/400?random=2' },
-      { src: 'https://picsum.photos/800/400?random=3' },
+      { src: 'https://picsum.photos/800/400?random=1', caption: 'With rounded corners' },
     ],
   },
 };
 
-// Slideshow Variations
-export const AutomaticSlideshow: Story = {
+// Slideshow Examples
+export const Slideshow_Basic: Story = {
+  name: 'Slideshow/Basic',
   args: {
-    'data-features': 'arrows indicators',
+    'data-features': 'slideshow arrows indicators',
     interval: 3000,
     images: [
-      { src: 'https://picsum.photos/800/400?random=1', caption: 'Automatic slideshow' },
-      { src: 'https://picsum.photos/800/400?random=2', caption: 'With navigation controls' },
-      { src: 'https://picsum.photos/800/400?random=3', caption: 'And indicators' },
+      { src: 'https://picsum.photos/800/400?random=1', caption: 'First slide' },
+      { src: 'https://picsum.photos/800/400?random=2', caption: 'Second slide' },
+      { src: 'https://picsum.photos/800/400?random=3', caption: 'Third slide' },
     ],
   },
 };
 
-export const SlideshowWithoutPause: Story = {
+export const Slideshow_WithoutPause: Story = {
+  name: 'Slideshow/Without Pause on Hover',
   args: {
     'data-features': 'slideshow arrows indicators dont-pause-on-hover',
     interval: 2000,
@@ -170,17 +174,8 @@ export const SlideshowWithoutPause: Story = {
   },
 };
 
-// Fullscreen Variations
-export const FullscreenEnabled: Story = {
-  args: {
-    'data-features': 'fullsize',
-    images: [
-      { src: 'https://picsum.photos/800/400?random=1', caption: 'Click to view fullscreen' },
-    ],
-  },
-};
-
-export const FullscreenWithSlideshow: Story = {
+export const Slideshow_WithFullscreen: Story = {
+  name: 'Slideshow/With Fullscreen',
   args: {
     'data-features': 'fullsize slideshow arrows indicators',
     interval: 3000,
@@ -192,138 +187,107 @@ export const FullscreenWithSlideshow: Story = {
   },
 };
 
-// Cropping Variations
-export const GlobalCrop: Story = {
-  args: {
-    'data-crop': 'top: 20%; right: 20%; bottom: 20%; left: 20%;',
-    images: [
-      { src: 'https://picsum.photos/800/400?random=1', caption: 'Globally cropped image' },
-    ],
-  },
+// Cropping Examples using pixel-matrix.png
+export const Crop_Center: Story = {
+    name: 'Cropping/Center Focus',
+    args: {
+        'data-crop': 'top: 10%;',
+        width: "100%",
+        height: "100%",
+        images: [
+            {
+                src: 'pixel-matrix.png',
+                caption: 'Center crop showing blue square'
+            },
+        ],
+    },
 };
 
-export const GlobalCropNoCaption: Story = {
+export const Crop_TopLeft: Story = {
+  name: 'Cropping/Top Left Corner',
   args: {
-    'data-crop': 'top: 20%; right: 20%; bottom: 20%; left: 20%;',
+    'data-crop': 'top: 0%; right: 70%; bottom: 70%; left: 0%;',
     images: [
-      { src: 'https://picsum.photos/800/400?random=1' },
-    ],
-  },
-};
-
-export const IndividualCropsNoCaption: Story = {
-  args: {
-    images: [
-      { 
-        src: 'https://picsum.photos/800/400?random=1',
-        crop: 'top: 30%; right: 30%; bottom: 30%; left: 30%;'
-      },
-      { 
-        src: 'https://picsum.photos/800/400?random=2',
-        crop: 'top: 0%; right: 20%; bottom: 40%; left: 20%;'
-      },
-      { 
-        src: 'https://picsum.photos/800/400?random=3',
-        crop: 'top: 40%; right: 20%; bottom: 0%; left: 20%;'
+      {
+        src: 'pixel-matrix.png',
+        caption: 'Top left crop showing pink corner'
       },
     ],
   },
 };
 
-export const SlideshowWithCropNoCaption: Story = {
+export const Crop_BottomRight: Story = {
+  name: 'Cropping/Bottom Right Corner',
   args: {
+    'data-crop': 'top: 70%; right: 0%; bottom: 0%; left: 70%;',
+    images: [
+      {
+        src: 'pixel-matrix.png',
+        caption: 'Bottom right crop showing pink corner'
+      },
+    ],
+  },
+};
+
+export const Crop_Horizontal: Story = {
+  name: 'Cropping/Horizontal Strip',
+  args: {
+    'data-crop': 'top: 40%; right: 0%; bottom: 40%; left: 0%;',
+    images: [
+      {
+        src: 'pixel-matrix.png',
+        caption: 'Horizontal strip showing middle section'
+      },
+    ],
+  },
+};
+
+export const Crop_Vertical: Story = {
+  name: 'Cropping/Vertical Strip',
+  args: {
+    'data-crop': 'top: 0%; right: 40%; bottom: 0%; left: 40%;',
+    images: [
+      {
+        src: 'pixel-matrix.png',
+        caption: 'Vertical strip showing middle section'
+      },
+    ],
+  },
+};
+
+export const Crop_DiagonalTLBR: Story = {
+  name: 'Cropping/Diagonal Top-Left to Bottom-Right',
+  args: {
+    images: [
+      {
+        src: 'pixel-matrix.png',
+        caption: 'Diagonal strip from top-left to bottom-right',
+        crop: 'top: 0%; right: 60%; bottom: 60%; left: 0%;'
+      },
+      {
+        src: 'pixel-matrix.png',
+        crop: 'top: 20%; right: 40%; bottom: 40%; left: 20%;'
+      },
+      {
+        src: 'pixel-matrix.png',
+        crop: 'top: 40%; right: 20%; bottom: 20%; left: 40%;'
+      },
+      {
+        src: 'pixel-matrix.png',
+        crop: 'top: 60%; right: 0%; bottom: 0%; left: 60%;'
+      }
+    ],
     'data-features': 'slideshow arrows indicators',
-    'data-crop': 'top: 10%; right: 10%; bottom: 10%; left: 10%;',
-    interval: 3000,
-    images: [
-      { src: 'https://picsum.photos/800/400?random=1' },
-      { src: 'https://picsum.photos/800/400?random=2' },
-      { src: 'https://picsum.photos/800/400?random=3' },
-    ],
-  },
-};
-
-export const MixedCropsNoCaption: Story = {
-  args: {
-    'data-features': 'slideshow arrows indicators',
-    'data-crop': 'top: 15%; right: 15%; bottom: 15%; left: 15%;',
-    interval: 3000,
-    images: [
-      { 
-        src: 'https://picsum.photos/800/400?random=1',
-        crop: 'top: 20%; right: 20%; bottom: 20%; left: 20%;'
-      },
-      { 
-        src: 'https://picsum.photos/800/400?random=2',
-        crop: 'top: 0%; right: 25%; bottom: 25%; left: 0%;'
-      },
-      { 
-        src: 'https://picsum.photos/800/400?random=3',
-        crop: 'top: 25%; right: 0%; bottom: 0%; left: 25%;'
-      },
-    ],
-  },
-};
-
-// Style Variations
-export const RoundedCorners: Story = {
-  args: {
-    'data-features': 'round-borders',
-    images: [
-      { src: 'https://picsum.photos/800/400?random=1', caption: 'With rounded corners' },
-    ],
-  },
-};
-
-export const Responsive: Story = {
-  args: {
-    width: '100%',
-    height: '50vh',
-    'data-features': 'slideshow arrows indicators round-borders',
-    interval: 3000,
-    images: [
-      { src: 'https://picsum.photos/800/400?random=1', caption: 'Responsive slideshow' },
-      { src: 'https://picsum.photos/800/400?random=2', caption: 'Full width' },
-      { src: 'https://picsum.photos/800/400?random=3', caption: 'Half viewport height' },
-    ],
-  },
-};
-
-// All Features Combined
-export const CompleteExample: Story = {
-  args: {
-    'data-features': 'slideshow arrows indicators fullsize round-borders',
-    'data-crop': 'top: 10%; right: 10%; bottom: 10%; left: 10%;',
-    interval: 3000,
-    width: '800px',
-    height: '400px',
-    images: [
-      { 
-        src: 'https://picsum.photos/800/400?random=1', 
-        caption: 'Complete example',
-        crop: 'top: 15%; right: 15%; bottom: 15%; left: 15%;'
-      },
-      { 
-        src: 'https://picsum.photos/800/400?random=2', 
-        caption: 'With all features',
-        crop: 'top: 20%; right: 20%; bottom: 20%; left: 20%;'
-      },
-      { 
-        src: 'https://picsum.photos/800/400?random=3', 
-        caption: 'And custom crops',
-        crop: 'top: 25%; right: 25%; bottom: 25%; left: 25%;'
-      },
-    ],
+    interval: 2000,
   },
 };
 
 // Callback Examples
-export const WithSlideChangeCallback: Story = {
+export const Callback_SlideChange: Story = {
+  name: 'Callbacks/Slide Change',
   args: {
     'data-features': 'slideshow arrows indicators',
     interval: 3000,
-    width: '800px',
-    height: '400px',
     images: [
       { src: 'https://picsum.photos/800/400?random=1', caption: 'First slide' },
       { src: 'https://picsum.photos/800/400?random=2', caption: 'Second slide' },
@@ -333,11 +297,10 @@ export const WithSlideChangeCallback: Story = {
   },
 };
 
-export const WithFullscreenCallbacks: Story = {
+export const Callback_Fullscreen: Story = {
+  name: 'Callbacks/Fullscreen',
   args: {
     'data-features': 'fullsize',
-    width: '800px',
-    height: '400px',
     images: [
       { src: 'https://picsum.photos/800/400?random=1', caption: 'Click to view fullscreen' },
     ],
@@ -346,12 +309,11 @@ export const WithFullscreenCallbacks: Story = {
   },
 };
 
-export const WithSlideshowCallbacks: Story = {
+export const Callback_Slideshow: Story = {
+  name: 'Callbacks/Slideshow Controls',
   args: {
     'data-features': 'slideshow arrows indicators',
     interval: 3000,
-    width: '800px',
-    height: '400px',
     images: [
       { src: 'https://picsum.photos/800/400?random=1', caption: 'First slide' },
       { src: 'https://picsum.photos/800/400?random=2', caption: 'Second slide' },
@@ -362,34 +324,31 @@ export const WithSlideshowCallbacks: Story = {
   },
 };
 
-export const WithImageClickCallback: Story = {
+// Complete Example
+export const Complete_AllFeatures: Story = {
+  name: 'Complete/All Features Combined',
   args: {
-    'data-features': 'fullsize',
-    width: '800px',
-    height: '400px',
-    images: [
-      { src: 'https://picsum.photos/800/400?random=1', caption: 'Click me!' },
-    ],
-    onImageClick: action('image-clicked'),
-  },
-};
-
-export const WithAllCallbacks: Story = {
-  args: {
-    'data-features': 'slideshow arrows indicators fullsize',
+    'data-features': 'slideshow arrows indicators fullsize round-borders',
+    'data-crop': 'top: 10%; right: 10%; bottom: 10%; left: 10%;',
     interval: 3000,
     width: '800px',
     height: '400px',
     images: [
-      { src: 'https://picsum.photos/800/400?random=1', caption: 'First slide' },
-      { src: 'https://picsum.photos/800/400?random=2', caption: 'Second slide' },
-      { src: 'https://picsum.photos/800/400?random=3', caption: 'Third slide' },
+      {
+        src: 'pixel-matrix.png',
+        caption: 'Complete example with all features',
+        crop: 'top: 15%; right: 15%; bottom: 15%; left: 15%;'
+      },
+      {
+        src: 'pixel-matrix.png',
+        caption: 'Different crop settings',
+        crop: 'top: 25%; right: 25%; bottom: 25%; left: 25%;'
+      },
+      {
+        src: 'pixel-matrix.png',
+        caption: 'Even more variations',
+        crop: 'top: 35%; right: 35%; bottom: 35%; left: 35%;'
+      },
     ],
-    onSlideChange: action('slide-changed'),
-    onFullscreenEnter: action('fullscreen-entered'),
-    onFullscreenExit: action('fullscreen-exited'),
-    onSlideshowPause: action('slideshow-paused'),
-    onSlideshowResume: action('slideshow-resumed'),
-    onImageClick: action('image-clicked'),
   },
 };
