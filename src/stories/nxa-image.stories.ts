@@ -5,7 +5,7 @@ import '../image/nxa-image';
 interface NxaImageArgs {
   'data-features': string;
   'data-crop': string;
-  interval: number;
+  'interval': number;
 }
 
 const meta: Meta<NxaImageArgs> = {
@@ -37,14 +37,13 @@ const meta: Meta<NxaImageArgs> = {
     return html`
       <nxa-image
         data-features=${args['data-features'] || ''}
-        data-crop=${args['data-crop'] || ''}
         interval=${args.interval || ''}
         style="width: 800px; height: 400px;"
       >
-        <img src="https://picsum.photos/800/400?random=1" data-caption="Image 1" />
-        <img src="https://picsum.photos/800/400?random=2" data-caption="Image 2" />
-        <img src="https://picsum.photos/800/400?random=3" data-caption="Image 3" />
-      </nxa-image>
+        <img src="https://picsum.photos/800/400?random=1" data-caption="Image 1" data-crop=${args['data-crop'] || ''} />
+        <img src="https://picsum.photos/800/400?random=2" data-caption="Image 2" data-crop=${args['data-crop'] || ''} />
+        <img src="https://picsum.photos/800/400?random=3" data-caption="Image 3" data-crop=${args['data-crop'] || ''} />
+    </nxa-image>
     `;
   },
 };
@@ -122,4 +121,4 @@ export const AllFeatures: Story = {
     'data-crop': 'top: 10%; right: 10%; bottom: 10%; left: 10%;',
     interval: 3000,
   },
-}; 
+};

@@ -18,7 +18,7 @@ A versatile and powerful image component for modern web applications that provid
 
 ```bash
 # Installation instructions will depend on your package manager
-npm install nextrap-element-image
+npm i @nextrap/image
 ```
 
 ## Usage Examples

@@ -92,6 +92,9 @@ export class NxaImage extends LitElement {
     @state()
     slideProgress: number = 0;
 
+    private _intervalId: number | null = null;
+    private _resizeObserver: ResizeObserver | null = null;
+
     constructor() {
         super();
         if (!this.style.width) {
@@ -125,6 +128,7 @@ export class NxaImage extends LitElement {
 
         // Parse features and initialize slideshow config
         this.dataFeatures = this.getAttribute("data-features")?.split(" ").filter(Boolean) || [];
+
         this.initSlidesShowConfig();
 
         // Check for captions
@@ -151,22 +155,22 @@ export class NxaImage extends LitElement {
             this.cropImages();
 
             // Set up size change detection
-            const resizeObserver = new ResizeObserver(() => {
+            this._resizeObserver = new ResizeObserver(() => {
                 this.cropImages();
             });
-            resizeObserver.observe(this);
+            this._resizeObserver.observe(this);
         });
 
         // Detect if mobile device and set up touch events
         this.isMobileDevice = detectMobileDevice();
 
         if (this.isMobileDevice) {
-            this.addEventListener('touchstart', this.handleTouchStart.bind(this), { passive: true });
-            this.addEventListener('touchend', this.handleTouchEnd.bind(this), { passive: false });
+            this.addEventListener('touchstart', this.handleTouchStart, { passive: true });
+            this.addEventListener('touchend', this.handleTouchEnd, { passive: false });
         }
 
         // Add resize listener
-        window.addEventListener('resize', this.handleResize.bind(this));
+        window.addEventListener('resize', this.handleResize);
     }
 
     /**
@@ -175,16 +179,26 @@ export class NxaImage extends LitElement {
      */
     disconnectedCallback() {
         super.disconnectedCallback();
-        if (this.slideInterval) {
-            clearInterval(this.slideInterval);
+        this.clearInterval();
+        
+        if (this._resizeObserver) {
+            this._resizeObserver.disconnect();
+            this._resizeObserver = null;
         }
 
         if (this.isMobileDevice) {
-            this.removeEventListener('touchstart', this.handleTouchStart.bind(this));
-            this.removeEventListener('touchend', this.handleTouchEnd.bind(this));
+            this.removeEventListener('touchstart', this.handleTouchStart);
+            this.removeEventListener('touchend', this.handleTouchEnd);
         }
 
-        window.removeEventListener('resize', this.handleResize.bind(this));
+        window.removeEventListener('resize', this.handleResize);
+    }
+
+    private clearInterval() {
+        if (this._intervalId !== null) {
+            clearInterval(this._intervalId);
+            this._intervalId = null;
+        }
     }
 
     /**
@@ -289,7 +303,19 @@ export class NxaImage extends LitElement {
         this.slidesShowConfig.enabled = this.dataFeatures.includes("slideshow");
 
         if (!this.slidesShowConfig.enabled) {
-            return;
+            // Check if there are multiple images and auto-enable slideshow
+            const imageCount = Array.from(this.children).filter(child => 
+                child instanceof HTMLImageElement || child.tagName.toLowerCase() === 'img'
+            ).length;
+    
+            if (imageCount > 1) {
+                this.slidesShowConfig.enabled = true;
+                this.dataFeatures.push("slideshow");
+                this.dataFeatures.push("arrows");
+                this.dataFeatures.push("indicators");
+            } else {
+                return;
+            }
         }
 
         // Set default values
@@ -361,17 +387,45 @@ export class NxaImage extends LitElement {
     }
 
     /**
+     * Initializes the slideshow interval and pause/resume behavior
+     */
+    initSlideshowInterval() {
+        this.clearInterval();
+
+        const interval = this.slidesShowConfig.interval || defaultSlideshowInterval;
+
+        // Reset progress
+        this.slideProgress = 0;
+
+        // Create a more frequent interval for smooth progress updates
+        const progressUpdateInterval = 50; // Update every 50ms for smooth animation
+        const progressIncrement = (progressUpdateInterval / interval) * 100;
+
+        this._intervalId = window.setInterval(() => {
+            if (!this.isPaused) {
+                this.slideProgress += progressIncrement;
+
+                if (this.slideProgress >= 100) {
+                    this.slideProgress = 0;
+                    this.nextSlide();
+                }
+
+                this.requestUpdate();
+            }
+        }, progressUpdateInterval);
+
+        if (this.slidesShowConfig.pauseOnHover) {
+            this.addEventListener('mouseenter', this.pauseSlideshow);
+            this.addEventListener('mouseleave', this.resumeSlideshow);
+        }
+    }
+
+    /**
      * Advances to the next slide in the slideshow
      */
     nextSlide() {
         // Reset progress
         this.slideProgress = 0;
-
-        // reset interval
-        if (this.slideInterval) {
-            clearInterval(this.slideInterval);
-            this.initSlideshowInterval();
-        }
 
         const activeSlide = this.querySelector("img.active");
         if (!activeSlide) {
@@ -398,12 +452,6 @@ export class NxaImage extends LitElement {
         // Reset progress
         this.slideProgress = 0;
 
-        // reset interval
-        if (this.slideInterval) {
-            clearInterval(this.slideInterval);
-            this.initSlideshowInterval();
-        }
-
         const activeSlide = this.querySelector("img.active");
         if (!activeSlide) {
             return;
@@ -420,42 +468,6 @@ export class NxaImage extends LitElement {
 
         // After updating the active slide, request an update to refresh indicators
         this.requestUpdate();
-    }
-
-    /**
-     * Initializes the slideshow interval and pause/resume behavior
-     */
-    initSlideshowInterval() {
-        if (this.slideInterval) {
-            clearInterval(this.slideInterval);
-        }
-
-        const interval = this.slidesShowConfig.interval || defaultSlideshowInterval;
-
-        // Reset progress
-        this.slideProgress = 0;
-
-        // Create a more frequent interval for smooth progress updates
-        const progressUpdateInterval = 50; // Update every 50ms for smooth animation
-        const progressIncrement = (progressUpdateInterval / interval) * 100;
-
-        this.slideInterval = window.setInterval(() => {
-            if (!this.isPaused) {
-                this.slideProgress += progressIncrement;
-
-                if (this.slideProgress >= 100) {
-                    this.slideProgress = 0;
-                    this.nextSlide();
-                }
-
-                this.requestUpdate();
-            }
-        }, progressUpdateInterval);
-
-        if (this.slidesShowConfig.pauseOnHover) {
-            this.addEventListener('mouseenter', this.pauseSlideshow.bind(this));
-            this.addEventListener('mouseleave', this.resumeSlideshow.bind(this));
-        }
     }
 
     /**
