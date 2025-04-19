@@ -136,6 +136,49 @@ npm i @nextrap/image
 </nxa-image>
 ```
 
+### Example with Event Callbacks
+
+```html
+<nxa-image 
+    style="width: 100%; height: 400px" 
+    data-features="slideshow arrows indicators fullsize"
+    id="myImageComponent">
+    <img src="path/to/image1.jpg" alt="Slide 1">
+    <img src="path/to/image2.jpg" alt="Slide 2">
+    <img src="path/to/image3.jpg" alt="Slide 3">
+</nxa-image>
+
+<script>
+    // Get the component instance
+    const imageComponent = document.getElementById('myImageComponent');
+
+    // Add event listeners
+    imageComponent.onSlideChange = (index, image) => {
+        console.log(`Slide changed to index ${index}`);
+    };
+
+    imageComponent.onFullscreenEnter = (image) => {
+        console.log('Entered fullscreen mode');
+    };
+
+    imageComponent.onFullscreenExit = (image) => {
+        console.log('Exited fullscreen mode');
+    };
+
+    imageComponent.onSlideshowPause = (image) => {
+        console.log('Slideshow paused');
+    };
+
+    imageComponent.onSlideshowResume = (image) => {
+        console.log('Slideshow resumed');
+    };
+
+    imageComponent.onImageClick = (image, event) => {
+        console.log('Image clicked', event);
+    };
+</script>
+```
+
 ## API Reference
 
 ### NxaImage Component
@@ -154,6 +197,15 @@ The main component that handles all image functionality.
   - `round-borders`: Applies rounded corners
   - `dont-pause-on-hover`: Prevents slideshow from pausing on hover
 - `interval`: Custom interval for slideshow transitions (in milliseconds)
+
+#### Event Callbacks
+
+- `onSlideChange`: Called when the active slide changes. Receives the index of the new active slide and the image element.
+- `onFullscreenEnter`: Called when entering fullscreen mode. Receives the image element that was clicked.
+- `onFullscreenExit`: Called when exiting fullscreen mode. Receives the image element that was in fullscreen.
+- `onSlideshowPause`: Called when the slideshow is paused. Receives the current active image element.
+- `onSlideshowResume`: Called when the slideshow is resumed. Receives the current active image element.
+- `onImageClick`: Called when an image is clicked. Receives the clicked image element and the click event.
 
 #### Image Element Attributes
 

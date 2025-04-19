@@ -287,6 +287,7 @@ export const getSlideshowStyles = (transition?: string): string => {
  * @param isMobileDevice Whether the current device is mobile
  */
 export const createFullsizeView = (img: HTMLImageElement, isMobileDevice: boolean, onClose?: () => void): void => {
+    // Check if fullscreen view already exists
     if (document.querySelector('.nxa-fullsize-container')) {
         return;
     }

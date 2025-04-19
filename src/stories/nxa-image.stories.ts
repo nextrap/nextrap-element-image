@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/web-components';
 import { html } from 'lit';
+import { action } from '@storybook/addon-actions';
 import '../image/nxa-image';
 
 interface NxaImageArgs {
@@ -13,6 +14,12 @@ interface NxaImageArgs {
     caption?: string;
     crop?: string;
   }>;
+  'onSlideChange'?: (index: number, image: HTMLImageElement) => void;
+  'onFullscreenEnter'?: (image: HTMLImageElement) => void;
+  'onFullscreenExit'?: (image: HTMLImageElement) => void;
+  'onSlideshowPause'?: (image: HTMLImageElement) => void;
+  'onSlideshowResume'?: (image: HTMLImageElement) => void;
+  'onImageClick'?: (image: HTMLImageElement, event: MouseEvent) => void;
 }
 
 const meta: Meta<NxaImageArgs> = {
@@ -89,6 +96,12 @@ A versatile image component with support for:
         data-crop=${args['data-crop'] || ''}
         interval=${args.interval || ''}
         style="width: ${args.width}; height: ${args.height};"
+        .onSlideChange=${args.onSlideChange}
+        .onFullscreenEnter=${args.onFullscreenEnter}
+        .onFullscreenExit=${args.onFullscreenExit}
+        .onSlideshowPause=${args.onSlideshowPause}
+        .onSlideshowResume=${args.onSlideshowResume}
+        .onImageClick=${args.onImageClick}
       >
         ${args.images.map(img => html`
           <img 
@@ -114,12 +127,20 @@ export const SingleImage: Story = {
   },
 };
 
-export const MultipleImages: Story = {
+export const SingleImageNoCaption: Story = {
   args: {
     images: [
-      { src: 'https://picsum.photos/800/400?random=1', caption: 'First image' },
-      { src: 'https://picsum.photos/800/400?random=2', caption: 'Second image' },
-      { src: 'https://picsum.photos/800/400?random=3', caption: 'Third image' },
+      { src: 'https://picsum.photos/800/400?random=1' }
+    ],
+  },
+};
+
+export const MultipleImagesNoCaption: Story = {
+  args: {
+    images: [
+      { src: 'https://picsum.photos/800/400?random=1' },
+      { src: 'https://picsum.photos/800/400?random=2' },
+      { src: 'https://picsum.photos/800/400?random=3' },
     ],
   },
 };
@@ -181,23 +202,64 @@ export const GlobalCrop: Story = {
   },
 };
 
-export const IndividualCrops: Story = {
+export const GlobalCropNoCaption: Story = {
+  args: {
+    'data-crop': 'top: 20%; right: 20%; bottom: 20%; left: 20%;',
+    images: [
+      { src: 'https://picsum.photos/800/400?random=1' },
+    ],
+  },
+};
+
+export const IndividualCropsNoCaption: Story = {
   args: {
     images: [
       { 
-        src: 'https://picsum.photos/800/400?random=1', 
-        caption: 'Center cropped',
+        src: 'https://picsum.photos/800/400?random=1',
         crop: 'top: 30%; right: 30%; bottom: 30%; left: 30%;'
       },
       { 
-        src: 'https://picsum.photos/800/400?random=2', 
-        caption: 'Top cropped',
+        src: 'https://picsum.photos/800/400?random=2',
         crop: 'top: 0%; right: 20%; bottom: 40%; left: 20%;'
       },
       { 
-        src: 'https://picsum.photos/800/400?random=3', 
-        caption: 'Bottom cropped',
+        src: 'https://picsum.photos/800/400?random=3',
         crop: 'top: 40%; right: 20%; bottom: 0%; left: 20%;'
+      },
+    ],
+  },
+};
+
+export const SlideshowWithCropNoCaption: Story = {
+  args: {
+    'data-features': 'slideshow arrows indicators',
+    'data-crop': 'top: 10%; right: 10%; bottom: 10%; left: 10%;',
+    interval: 3000,
+    images: [
+      { src: 'https://picsum.photos/800/400?random=1' },
+      { src: 'https://picsum.photos/800/400?random=2' },
+      { src: 'https://picsum.photos/800/400?random=3' },
+    ],
+  },
+};
+
+export const MixedCropsNoCaption: Story = {
+  args: {
+    'data-features': 'slideshow arrows indicators',
+    'data-crop': 'top: 15%; right: 15%; bottom: 15%; left: 15%;',
+    interval: 3000,
+    images: [
+      { 
+        src: 'https://picsum.photos/800/400?random=1',
+        crop: 'top: 20%; right: 20%; bottom: 20%; left: 20%;'
+      },
+      { 
+        src: 'https://picsum.photos/800/400?random=2',
+        crop: 'top: 0%; right: 25%; bottom: 25%; left: 0%;'
+      },
+      { 
+        src: 'https://picsum.photos/800/400?random=3',
+        crop: 'top: 25%; right: 0%; bottom: 0%; left: 25%;'
       },
     ],
   },
@@ -252,5 +314,82 @@ export const CompleteExample: Story = {
         crop: 'top: 25%; right: 25%; bottom: 25%; left: 25%;'
       },
     ],
+  },
+};
+
+// Callback Examples
+export const WithSlideChangeCallback: Story = {
+  args: {
+    'data-features': 'slideshow arrows indicators',
+    interval: 3000,
+    width: '800px',
+    height: '400px',
+    images: [
+      { src: 'https://picsum.photos/800/400?random=1', caption: 'First slide' },
+      { src: 'https://picsum.photos/800/400?random=2', caption: 'Second slide' },
+      { src: 'https://picsum.photos/800/400?random=3', caption: 'Third slide' },
+    ],
+    onSlideChange: action('slide-changed'),
+  },
+};
+
+export const WithFullscreenCallbacks: Story = {
+  args: {
+    'data-features': 'fullsize',
+    width: '800px',
+    height: '400px',
+    images: [
+      { src: 'https://picsum.photos/800/400?random=1', caption: 'Click to view fullscreen' },
+    ],
+    onFullscreenEnter: action('fullscreen-entered'),
+    onFullscreenExit: action('fullscreen-exited'),
+  },
+};
+
+export const WithSlideshowCallbacks: Story = {
+  args: {
+    'data-features': 'slideshow arrows indicators',
+    interval: 3000,
+    width: '800px',
+    height: '400px',
+    images: [
+      { src: 'https://picsum.photos/800/400?random=1', caption: 'First slide' },
+      { src: 'https://picsum.photos/800/400?random=2', caption: 'Second slide' },
+      { src: 'https://picsum.photos/800/400?random=3', caption: 'Third slide' },
+    ],
+    onSlideshowPause: action('slideshow-paused'),
+    onSlideshowResume: action('slideshow-resumed'),
+  },
+};
+
+export const WithImageClickCallback: Story = {
+  args: {
+    'data-features': 'fullsize',
+    width: '800px',
+    height: '400px',
+    images: [
+      { src: 'https://picsum.photos/800/400?random=1', caption: 'Click me!' },
+    ],
+    onImageClick: action('image-clicked'),
+  },
+};
+
+export const WithAllCallbacks: Story = {
+  args: {
+    'data-features': 'slideshow arrows indicators fullsize',
+    interval: 3000,
+    width: '800px',
+    height: '400px',
+    images: [
+      { src: 'https://picsum.photos/800/400?random=1', caption: 'First slide' },
+      { src: 'https://picsum.photos/800/400?random=2', caption: 'Second slide' },
+      { src: 'https://picsum.photos/800/400?random=3', caption: 'Third slide' },
+    ],
+    onSlideChange: action('slide-changed'),
+    onFullscreenEnter: action('fullscreen-entered'),
+    onFullscreenExit: action('fullscreen-exited'),
+    onSlideshowPause: action('slideshow-paused'),
+    onSlideshowResume: action('slideshow-resumed'),
+    onImageClick: action('image-clicked'),
   },
 };
