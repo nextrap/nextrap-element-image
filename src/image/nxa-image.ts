@@ -50,51 +50,111 @@ import {style} from "./style";
 export class NxaImage extends LitElement {
     static styles = style;
 
-    @property({ type: Object })
-     globalDataCrop: Record<string, string> = {};
+    /**
+     * Global crop settings applied to all images in the component.
+     * Can be overridden by individual image crop settings.
+     */
+    @property({type: Object}) globalDataCrop: Record<string, string> = {};
 
-    @property({ type: Array })
-     childDataCrop: Record<string, string>[] = [];
+    /**
+     * Array of crop settings for each individual image.
+     * Each index corresponds to the position of the image in the component.
+     */
+    @property({ type: Array }) childDataCrop: Record<string, string>[] = [];
 
-    @property({ type: Array })
-     dataFeatures: string[] = [];
+    /**
+     * List of enabled features for the component.
+     * Features are specified in the data-features attribute as space-separated values.
+     */
+    @property({ type: Array }) dataFeatures: string[] = [];
 
-    @property({ type: Object })
-     slidesShowConfig: SlideShowConfig = {};
+    /**
+     * Configuration object for slideshow functionality.
+     * Contains settings like interval, transition effects, and UI elements visibility.
+     */
+    @property({ type: Object }) slidesShowConfig: SlideShowConfig = {};
 
-    @property({ type: Boolean })
-     fullSize: boolean = false;
+    /**
+     * Whether the component supports fullscreen view of images.
+     * Enabled when 'fullsize' is included in data-features.
+     */
+    @property({ type: Boolean }) fullSize: boolean = false;
 
-    @property({ type: Boolean })
-     roundBorders: boolean = false;
+    /**
+     * Whether the component has rounded corners.
+     * Enabled when 'round-borders' is included in data-features.
+     */
+    @property({ type: Boolean }) roundBorders: boolean = false;
 
-    @property({ type: Number })
-     interval: number = 0;
+    /**
+     * Custom interval duration for slideshow transitions in milliseconds.
+     * If not specified, defaults to defaultSlideshowInterval.
+     */
+    @property({ type: Number }) interval: number = 0;
 
-    @state()
-     slideInterval: number = 0;
+    /**
+     * Whether the component is in fullscreen mode.
+     */
+    @state() isFullSizeActive: boolean = false;
 
-    @state()
-     currentCaption: string = '';
+    /**
+     * Current interval ID for the slideshow timer.
+     * Used to manage and clean up the interval.
+     */
+    @state() slideInterval: number = 0;
 
-    @state()
-     touchStartX: number = 0;
+    /**
+     * Current caption text displayed below the active image.
+     * Updated when slides change or when a new image becomes active.
+     */
+    @state() currentCaption: string = '';
 
-    @state()
-    touchStartY: number = 0;
+    /**
+     * X-coordinate of the touch start position.
+     * Used for swipe gesture detection on mobile devices.
+     */
+    @state() touchStartX: number = 0;
 
-    @state()
-    isMobileDevice: boolean = false;
+    /**
+     * Y-coordinate of the touch start position.
+     * Used for swipe gesture detection on mobile devices.
+     */
+    @state() touchStartY: number = 0;
 
-    @state()
-    isPaused: boolean = false;
+    /**
+     * Whether the current device is a mobile device.
+     * Affects touch event handling and UI adaptations.
+     */
+    @state() isMobileDevice: boolean = false;
 
-    @state()
-    slideProgress: number = 0;
+    /**
+     * Whether the slideshow is currently paused.
+     * Can be triggered by hover events or user interaction.
+     */
+    @state() isPaused: boolean = false;
 
+    /**
+     * Current progress of the slideshow transition (0-100).
+     * Used for progress bar animation in indicators.
+     */
+    @state() slideProgress: number = 0;
+
+    /**
+     * ID of the current slideshow interval.
+     * Used for proper cleanup and interval management.
+     */
     private _intervalId: number | null = null;
+
+    /**
+     * ResizeObserver instance for detecting size changes.
+     * Used to update image cropping when the component size changes.
+     */
     private _resizeObserver: ResizeObserver | null = null;
 
+    /**
+     * Creates a new NxaImage component.
+     * Sets default width and height if not specified.
+     */
     constructor() {
         super();
         if (!this.style.width) {
@@ -180,7 +240,7 @@ export class NxaImage extends LitElement {
     disconnectedCallback() {
         super.disconnectedCallback();
         this.clearInterval();
-        
+
         if (this._resizeObserver) {
             this._resizeObserver.disconnect();
             this._resizeObserver = null;
@@ -304,10 +364,10 @@ export class NxaImage extends LitElement {
 
         if (!this.slidesShowConfig.enabled) {
             // Check if there are multiple images and auto-enable slideshow
-            const imageCount = Array.from(this.children).filter(child => 
+            const imageCount = Array.from(this.children).filter(child =>
                 child instanceof HTMLImageElement || child.tagName.toLowerCase() === 'img'
             ).length;
-    
+
             if (imageCount > 1) {
                 this.slidesShowConfig.enabled = true;
                 this.dataFeatures.push("slideshow");
@@ -353,7 +413,21 @@ export class NxaImage extends LitElement {
                     }
 
                     if (img) {
-                        createFullsizeView(img, this.isMobileDevice);
+                        this.isFullSizeActive = true;
+                        // Pause slideshow when entering fullscreen
+                        if (this.slidesShowConfig.enabled) {
+                            this.pauseSlideshow();
+                        }
+                        
+                        const onClose = () => {
+                            this.isFullSizeActive = false;
+                            // Resume slideshow when exiting fullscreen
+                            if (this.slidesShowConfig.enabled) {
+                                this.resumeSlideshow();
+                            }
+                        }
+                        
+                        createFullsizeView(img, this.isMobileDevice, onClose);
                     }
                 });
             }
@@ -482,6 +556,10 @@ export class NxaImage extends LitElement {
      * Resumes the slideshow
      */
     private resumeSlideshow() {
+        if (this.isFullSizeActive) {
+            return;
+        }
+
         this.isPaused = false;
         this.requestUpdate();
     }

@@ -286,7 +286,7 @@ export const getSlideshowStyles = (transition?: string): string => {
  * @param img The image to display in fullsize
  * @param isMobileDevice Whether the current device is mobile
  */
-export const createFullsizeView = (img: HTMLImageElement, isMobileDevice: boolean): void => {
+export const createFullsizeView = (img: HTMLImageElement, isMobileDevice: boolean, onClose?: () => void): void => {
     if (document.querySelector('.nxa-fullsize-container')) {
         return;
     }
@@ -334,6 +334,7 @@ export const createFullsizeView = (img: HTMLImageElement, isMobileDevice: boolea
         }, 300);
 
         document.removeEventListener("keydown", keyHandler);
+        onClose?.();
     };
 
     container.addEventListener("click", cleanup);
