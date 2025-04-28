@@ -5,6 +5,26 @@ All notable changes to the Nextrap Element Image project will be documented in t
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.0] - 2023-11-20 - Enhanced Mobile Experience & Fullscreen Navigation
+
+### Added
+- Improved fullscreen mode with navigation controls:
+  - Next/previous buttons for slideshow navigation in fullscreen view
+  - Keyboard arrow key support for navigating between slides
+  - Swipe gesture support for mobile devices in fullscreen mode
+- Enhanced touch interaction system:
+  - Improved swipe detection with velocity and distance thresholds
+  - Better touch event handling with passive event listeners
+  - Smoother animations and transitions for touch interactions
+
+### Changed
+- Redesigned fullscreen UI with improved styling:
+  - Better positioning and sizing of navigation controls
+  - Enhanced close button with improved visibility
+  - Responsive design adjustments for different screen sizes
+- Optimized touch event handling for better performance
+- Improved mobile detection and responsiveness
+
 ## [1.1.0] - 2023-11-15 - Event Callbacks
 
 ### Added

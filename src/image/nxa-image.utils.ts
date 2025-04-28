@@ -281,12 +281,46 @@ export const getSlideshowStyles = (transition?: string): string => {
     `;
 };
 
+// Constants
+const SWIPE_THRESHOLD = 50;
+const TOUCH_RESET_DELAY = 300;
+const MOBILE_BREAKPOINT = 768;
+const TRANSITION_DURATION = 300;
+
+// Types
+interface TouchState {
+    startX: number;
+    startY: number;
+    endX: number;
+    endY: number;
+    isSwiping: boolean;
+    touchHandled: boolean;
+    touchStartTime: number;
+    isButtonTouch: boolean;
+    isClosing: boolean;
+    touchTarget: HTMLElement | null;
+}
+
+interface CropValues {
+    value: number;
+    unit: string;
+}
+
+interface CropData {
+    top?: string;
+    right?: string;
+    bottom?: string;
+    left?: string;
+    transform?: string;
+    position?: string;
+}
+
 /**
  * Creates and displays the fullsize view for an image
  * @param img The image to display in fullsize
  * @param isMobileDevice Whether the current device is mobile
  */
-export const createFullsizeView = (img: HTMLImageElement, isMobileDevice: boolean, onClose?: () => void): void => {
+export const createFullsizeView = (img: HTMLImageElement, isMobileDevice: boolean, onClose?: () => void, onNext?: () => void, onPrev?: () => void): void => {
     // Check if fullscreen view already exists
     if (document.querySelector('.nxa-fullsize-container')) {
         return;
@@ -311,7 +345,7 @@ export const createFullsizeView = (img: HTMLImageElement, isMobileDevice: boolea
     fullSizeImg.src = img.src;
     fullSizeImg.className = "nxa-fullsize-image";
 
-    // Create close button (always create it, but only show on mobile)
+    // Create close button
     const closeBtn = document.createElement("button");
     closeBtn.className = "nxa-fullsize-close-btn";
     closeBtn.innerHTML = "×";
@@ -323,8 +357,84 @@ export const createFullsizeView = (img: HTMLImageElement, isMobileDevice: boolea
     container.appendChild(fullSizeImg);
     container.appendChild(closeBtn);
 
+    // Initialize touch state
+    const touchState: TouchState = {
+        startX: 0,
+        startY: 0,
+        endX: 0,
+        endY: 0,
+        isSwiping: false,
+        touchHandled: false,
+        touchStartTime: 0,
+        isButtonTouch: false,
+        isClosing: false,
+        touchTarget: null
+    };
+
+    // Create navigation buttons if onNext/onPrev are provided and slideshow is enabled
+    if (onNext && onPrev) {
+        // Check if we're in a slideshow context by looking for multiple images
+        const isSlideshow = document.querySelectorAll('img').length > 1;
+        
+        if (isSlideshow) {
+            const prevBtn = document.createElement("button");
+            prevBtn.className = "nxa-fullsize-nav-btn prev";
+            prevBtn.innerHTML = "❮";
+            
+            // Handle touch events for buttons
+            prevBtn.addEventListener("touchstart", (e) => {
+                e.stopPropagation();
+                if (touchState.isClosing) return;
+                touchState.isButtonTouch = true;
+                touchState.touchHandled = true;
+                onPrev();
+            }, { passive: false });
+
+            prevBtn.addEventListener("click", (e) => {
+                e.stopPropagation();
+                if (touchState.isClosing) return;
+                if (!touchState.touchHandled) {
+                    onPrev();
+                }
+            });
+
+            const nextBtn = document.createElement("button");
+            nextBtn.className = "nxa-fullsize-nav-btn next";
+            nextBtn.innerHTML = "❯";
+            
+            nextBtn.addEventListener("touchstart", (e) => {
+                e.stopPropagation();
+                if (touchState.isClosing) return;
+                touchState.isButtonTouch = true;
+                touchState.touchHandled = true;
+                onNext();
+            }, { passive: false });
+
+            nextBtn.addEventListener("click", (e) => {
+                e.stopPropagation();
+                if (touchState.isClosing) return;
+                if (!touchState.touchHandled) {
+                    onNext();
+                }
+            });
+
+            container.appendChild(prevBtn);
+            container.appendChild(nextBtn);
+        }
+    }
+
     // Setup event handlers
     const cleanup = () => {
+        // Remove event listeners first to prevent any callbacks
+        document.removeEventListener("keydown", keyHandler);
+        darkOverlay.removeEventListener("click", cleanup);
+        fullSizeImg.removeEventListener("click", handleImageClick);
+        closeBtn.removeEventListener("click", handleCloseClick);
+        container.removeEventListener("touchstart", handleTouchStart);
+        container.removeEventListener("touchmove", handleTouchMove);
+        container.removeEventListener("touchend", handleTouchEnd);
+        container.removeEventListener("touchcancel", handleTouchCancel);
+
         // Add closing animation class
         container.classList.add('closing');
 
@@ -332,23 +442,134 @@ export const createFullsizeView = (img: HTMLImageElement, isMobileDevice: boolea
         setTimeout(() => {
             container.remove();
             document.getElementById('nxa-fullsize-styles')?.remove();
-        }, 300);
-
-        document.removeEventListener("keydown", keyHandler);
-        onClose?.();
+            // Call onClose after everything is cleaned up
+            onClose?.();
+        }, TRANSITION_DURATION);
     };
 
-    container.addEventListener("click", cleanup);
-    closeBtn.addEventListener("click", (e) => {
-        e.stopPropagation(); // Prevent double triggering
+    const handleImageClick = (e: MouseEvent) => {
+        e.stopPropagation();
         cleanup();
-    });
+    };
+
+    const handleCloseClick = (e: MouseEvent) => {
+        e.stopPropagation();
+        cleanup();
+    };
+
+    const handleTouchStart = (e: TouchEvent) => {
+        // Only handle single touch and ignore if it's a button touch
+        if (e.touches.length > 1 || touchState.isButtonTouch) return;
+        
+        // Store the initial touch target
+        touchState.touchTarget = e.target as HTMLElement;
+        
+        // Don't handle touch if it's on the close button or image
+        if (touchState.touchTarget === closeBtn || touchState.touchTarget === fullSizeImg) return;
+        
+        touchState.startX = e.touches[0].clientX;
+        touchState.startY = e.touches[0].clientY;
+        touchState.isSwiping = false;
+        touchState.touchHandled = false;
+        touchState.touchStartTime = Date.now();
+        
+        // Add a class to indicate touch is active
+        container.classList.add('touch-active');
+    };
+
+    const handleTouchMove = (e: TouchEvent) => {
+        if (e.touches.length > 1 || touchState.isButtonTouch) return;
+
+        // Don't handle touch if it started on the close button or image
+        if (touchState.touchTarget === closeBtn || touchState.touchTarget === fullSizeImg) return;
+
+        const currentX = e.touches[0].clientX;
+        const currentY = e.touches[0].clientY;
+        const xDiff = currentX - touchState.startX;
+        const yDiff = currentY - touchState.startY;
+
+        // Only start swiping if we've moved enough horizontally
+        if (!touchState.isSwiping && Math.abs(xDiff) > 10) {
+            touchState.isSwiping = true;
+        }
+
+        // Only handle horizontal swipes
+        if (touchState.isSwiping && Math.abs(xDiff) > Math.abs(yDiff)) {
+            e.preventDefault();
+            touchState.touchHandled = true;
+            
+            // Update end coordinates
+            touchState.endX = currentX;
+            touchState.endY = currentY;
+        }
+    };
+
+    const handleTouchEnd = (e: TouchEvent) => {
+        if (touchState.isButtonTouch) {
+            touchState.isButtonTouch = false;
+            return;
+        }
+
+        // Don't handle touch if it started on the close button or image
+        if (touchState.touchTarget === closeBtn || touchState.touchTarget === fullSizeImg) {
+            cleanup();
+            return;
+        }
+
+        const touchDuration = Date.now() - touchState.touchStartTime;
+        const xDiff = touchState.endX - touchState.startX;
+        const yDiff = touchState.endY - touchState.startY;
+
+        touchState.isSwiping = false;
+        container.classList.remove('touch-active');
+
+        // Only handle horizontal swipes that are significant enough
+        if (Math.abs(xDiff) > Math.abs(yDiff) && Math.abs(xDiff) > SWIPE_THRESHOLD) {
+            if (xDiff > 0 && onPrev) {
+                onPrev();
+            } else if (xDiff < 0 && onNext) {
+                onNext();
+            }
+        } else if (!touchState.touchHandled && touchDuration < 300) {
+            // If it was a quick tap and not a swipe, treat it as a click
+            cleanup();
+        }
+
+        // Reset touch state after a short delay
+        setTimeout(() => {
+            touchState.touchHandled = false;
+            touchState.endX = 0;
+            touchState.endY = 0;
+            touchState.touchTarget = null;
+        }, TOUCH_RESET_DELAY);
+    };
+
+    const handleTouchCancel = () => {
+        touchState.isSwiping = false;
+        touchState.touchHandled = false;
+        touchState.isButtonTouch = false;
+        touchState.touchTarget = null;
+        container.classList.remove('touch-active');
+    };
 
     const keyHandler = (event: KeyboardEvent) => {
         if (event.key === "Escape") {
             cleanup();
+        } else if (event.key === "ArrowLeft" && onPrev) {
+            onPrev();
+        } else if (event.key === "ArrowRight" && onNext) {
+            onNext();
         }
     };
+
+    // Add event listeners
+    fullSizeImg.addEventListener("click", handleImageClick, true);
+    darkOverlay.addEventListener("click", cleanup);
+    closeBtn.addEventListener("click", handleCloseClick);
+    container.addEventListener("touchstart", handleTouchStart, { passive: true });
+    container.addEventListener("touchmove", handleTouchMove, { passive: false });
+    container.addEventListener("touchend", handleTouchEnd, { passive: true });
+    container.addEventListener("touchcancel", handleTouchCancel, { passive: true });
     document.addEventListener("keydown", keyHandler);
 
     // Add style and container to document
@@ -448,11 +669,11 @@ export const getFullsizeStyles = (imgSrc: string): string => {
 
         .nxa-fullsize-close-btn {
             position: absolute;
-            top: 15px;
-            right: 15px;
-            width: 40px;
-            height: 40px;
-            background-color: rgba(0, 0, 0, 0.5);
+            top: 20px;
+            right: 20px;
+            width: 44px;
+            height: 44px;
+            background-color: rgba(255, 255, 255, 0.1);
             border: none;
             border-radius: 50%;
             color: white;
@@ -462,14 +683,30 @@ export const getFullsizeStyles = (imgSrc: string): string => {
             justify-content: center;
             cursor: pointer;
             z-index: 2;
-            backdrop-filter: blur(4px);
-            transition: background-color 0.3s ease, transform 0.2s ease;
+            backdrop-filter: blur(8px);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             animation: nxa-fullsize-fade-in 0.5s ease-out 0.2s backwards;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
         }
 
         .nxa-fullsize-close-btn:hover {
-            background-color: rgba(0, 0, 0, 0.7);
+            background-color: rgba(255, 255, 255, 0.15);
             transform: scale(1.1);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        .nxa-fullsize-close-btn:active {
+            transform: scale(0.95);
+        }
+
+        @media (max-width: 768px) {
+            .nxa-fullsize-close-btn {
+                top: 16px;
+                right: 16px;
+                width: 40px;
+                height: 40px;
+                font-size: 20px;
+            }
         }
 
         /* Animation for closing */
@@ -479,6 +716,54 @@ export const getFullsizeStyles = (imgSrc: string): string => {
 
         .nxa-fullsize-container.closing .nxa-fullsize-image {
             animation: nxa-fullsize-scale-in 0.3s ease-in reverse;
+        }
+
+        .nxa-fullsize-nav-btn {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 40px;
+            height: 60px;
+            background: rgba(0, 0, 0, 0.2);
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: auto 0;
+            font-size: 18px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            backdrop-filter: blur(4px);
+            z-index: 2;
+            animation: nxa-fullsize-fade-in 0.5s ease-out 0.2s backwards;
+        }
+
+        .nxa-fullsize-nav-btn.prev {
+            left: 0;
+            border-radius: 0 4px 4px 0;
+        }
+
+        .nxa-fullsize-nav-btn.next {
+            right: 0;
+            border-radius: 4px 0 0 4px;
+        }
+
+        .nxa-fullsize-nav-btn:hover {
+            background: rgba(0, 0, 0, 0.5);
+            width: 50px;
+        }
+
+        @media (max-width: 768px) {
+            .nxa-fullsize-nav-btn {
+                width: 35px;
+                height: 50px;
+                font-size: 16px;
+            }
+
+            .nxa-fullsize-nav-btn:hover {
+                width: 45px;
+            }
         }
     `;
 };

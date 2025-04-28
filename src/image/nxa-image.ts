@@ -158,6 +158,18 @@ export class NxaImage extends LitElement {
     @state() touchStartY: number = 0;
 
     /**
+     * X-coordinate of the touch end position.
+     * Used for swipe gesture detection on mobile devices.
+     */
+    @state() touchEndX: number = 0;
+
+    /**
+     * Y-coordinate of the touch end position.
+     * Used for swipe gesture detection on mobile devices.
+     */
+    @state() touchEndY: number = 0;
+
+    /**
      * Whether the current device is a mobile device.
      * Affects touch event handling and UI adaptations.
      */
@@ -174,6 +186,30 @@ export class NxaImage extends LitElement {
      * Used for progress bar animation in indicators.
      */
     @state() slideProgress: number = 0;
+
+    /**
+     * Whether the slideshow is currently being swiped.
+     * Used for swipe gesture detection on mobile devices.
+     */
+    @state() isSwiping: boolean = false;
+
+    /**
+     * Distance of the swipe gesture.
+     * Used for swipe gesture detection on mobile devices.
+     */
+    @state() swipeDistance: number = 0;
+
+    /**
+     * Threshold distance for swipe gesture detection.
+     * Used for swipe gesture detection on mobile devices.
+     */
+    @state() swipeThreshold: number = 50;
+
+    /**
+     * Velocity threshold for swipe gesture detection.
+     * Used for swipe gesture detection on mobile devices.
+     */
+    @state() swipeVelocityThreshold: number = 0.3;
 
     /**
      * ID of the current slideshow interval.
@@ -261,7 +297,8 @@ export class NxaImage extends LitElement {
         this.isMobileDevice = detectMobileDevice();
 
         if (this.isMobileDevice) {
-            this.addEventListener('touchstart', this.handleTouchStart, { passive: true });
+            this.addEventListener('touchstart', this.handleTouchStart, { passive: false });
+            this.addEventListener('touchmove', this.handleTouchMove, { passive: false });
             this.addEventListener('touchend', this.handleTouchEnd, { passive: false });
         }
 
@@ -284,6 +321,7 @@ export class NxaImage extends LitElement {
 
         if (this.isMobileDevice) {
             this.removeEventListener('touchstart', this.handleTouchStart);
+            this.removeEventListener('touchmove', this.handleTouchMove);
             this.removeEventListener('touchend', this.handleTouchEnd);
         }
 
@@ -467,26 +505,22 @@ export class NxaImage extends LitElement {
 
         if (img) {
             this.isFullSizeActive = true;
-            // Pause slideshow when entering fullscreen
             if (this.slidesShowConfig.enabled) {
                 this.pauseSlideshow();
             }
 
             const onClose = () => {
                 this.isFullSizeActive = false;
-                // Call onFullscreenExit callback if provided
                 if (this.onFullscreenExit) {
                     this.onFullscreenExit(img);
                 }
-                // Resume slideshow when exiting fullscreen
                 if (this.slidesShowConfig.enabled) {
                     this.resumeSlideshow();
                 }
             }
 
-            createFullsizeView(img, this.isMobileDevice, onClose);
+            createFullsizeView(img, this.isMobileDevice, onClose, this.handleFullscreenNext, this.handleFullscreenPrev);
 
-            // Call onFullscreenEnter callback if provided, after the view is created
             if (this.onFullscreenEnter) {
                 this.onFullscreenEnter(img);
             }
@@ -732,6 +766,9 @@ export class NxaImage extends LitElement {
      * @param e The touch event
      */
     private handleTouchStart(e: TouchEvent) {
+        // Don't handle touch events when in fullscreen mode
+        if (this.isFullSizeActive) return;
+        
         this.touchStartX = e.touches[0].clientX;
         this.touchStartY = e.touches[0].clientY;
     }
@@ -741,6 +778,9 @@ export class NxaImage extends LitElement {
      * @param e The touch event
      */
     private handleTouchEnd(e: TouchEvent) {
+        // Don't handle touch events when in fullscreen mode
+        if (this.isFullSizeActive) return;
+        
         // Only proceed if slideshow is enabled
         if (!this.slidesShowConfig.enabled) return;
 
@@ -760,6 +800,81 @@ export class NxaImage extends LitElement {
             } else {
                 // Swipe right, go to previous slide
                 this.prevSlide();
+            }
+        }
+    }
+
+    /**
+     * Handles touch move events for swipe detection
+     * @param e The touch event
+     */
+    private handleTouchMove = (e: TouchEvent) => {
+        // Don't handle touch events when in fullscreen mode
+        if (this.isFullSizeActive) return;
+        
+        if (!this.isSwiping) return;
+
+        this.touchEndX = e.touches[0].clientX;
+        this.touchEndY = e.touches[0].clientY;
+
+        const xDiff = this.touchStartX - this.touchEndX;
+        const yDiff = this.touchStartY - this.touchEndY;
+
+        // Only handle horizontal swipes
+        if (Math.abs(xDiff) > Math.abs(yDiff)) {
+            e.preventDefault();
+            this.swipeDistance = xDiff;
+
+            // Update image position during swipe
+            if (this.isFullSizeActive) {
+                const fullscreenImg = document.querySelector(".nxa-fullsize-image") as HTMLImageElement;
+                if (fullscreenImg) {
+                    fullscreenImg.style.transform = `translateX(${xDiff}px)`;
+                }
+            }
+        }
+    }
+
+    /**
+     * Handles next slide navigation in fullscreen mode
+     */
+    private handleFullscreenNext = () => {
+        if (this.slidesShowConfig.enabled) {
+            this.nextSlide();
+            const activeImg = this.querySelector("img.active") as HTMLImageElement;
+            if (activeImg) {
+                const fullscreenImg = document.querySelector(".nxa-fullsize-image") as HTMLImageElement;
+                const fullscreenBg = document.querySelector(".nxa-fullsize-bg") as HTMLDivElement;
+                if (fullscreenImg && fullscreenBg) {
+                    fullscreenImg.style.transition = 'transform 0.3s ease-out';
+                    fullscreenImg.src = activeImg.src;
+                    fullscreenBg.style.backgroundImage = `url(${activeImg.src})`;
+                    setTimeout(() => {
+                        fullscreenImg.style.transition = '';
+                    }, 300);
+                }
+            }
+        }
+    }
+
+    /**
+     * Handles previous slide navigation in fullscreen mode
+     */
+    private handleFullscreenPrev = () => {
+        if (this.slidesShowConfig.enabled) {
+            this.prevSlide();
+            const activeImg = this.querySelector("img.active") as HTMLImageElement;
+            if (activeImg) {
+                const fullscreenImg = document.querySelector(".nxa-fullsize-image") as HTMLImageElement;
+                const fullscreenBg = document.querySelector(".nxa-fullsize-bg") as HTMLDivElement;
+                if (fullscreenImg && fullscreenBg) {
+                    fullscreenImg.style.transition = 'transform 0.3s ease-out';
+                    fullscreenImg.src = activeImg.src;
+                    fullscreenBg.style.backgroundImage = `url(${activeImg.src})`;
+                    setTimeout(() => {
+                        fullscreenImg.style.transition = '';
+                    }, 300);
+                }
             }
         }
     }
