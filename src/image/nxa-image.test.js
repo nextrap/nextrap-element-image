@@ -1,6 +1,28 @@
-import {describe, it, expect} from 'vitest';
+import {describe, it, expect, vi} from 'vitest';
 import {JSDOM} from 'jsdom';
 import {calculateScaleFactor, cropImage, cssToJson, parseValue} from './nxa-image.utils.ts';
+import {NxaImage} from './nxa-image'
+
+// Move setupDom and cleanup to top-level scope for all tests
+const setupDom = () => {
+    const dom = new JSDOM(`<!DOCTYPE html><html><body></body></html>`, {
+        url: 'http://localhost/',
+        pretendToBeVisual: true
+    });
+    global.window = dom.window;
+    global.document = dom.window.document;
+    global.HTMLImageElement = dom.window.HTMLImageElement;
+    // Create test image element
+    const child = dom.window.document.createElement('img');
+    child.src = 'test-image.jpg';
+    dom.window.document.body.appendChild(child);
+    return {dom, child};
+};
+const cleanup = () => {
+    delete global.window;
+    delete global.document;
+    delete global.HTMLImageElement;
+};
 
 describe('cssToJson', () => {
     it('should convert CSS string to JSON object', () => {
@@ -20,6 +42,16 @@ describe('cssToJson', () => {
     it('should handle string with semicolons', () => {
         const input = 'top: 10%; bottom: 20%; left: 30%';
         const expected = {top: '10%', bottom: '20%', left: '30%'};
+        expect(cssToJson(input)).toEqual(expected);
+    });
+
+    it('should handle null input', () => {
+        expect(cssToJson(null)).toEqual({});
+    });
+
+    it('should handle very large numbers and uncommon units', () => {
+        const input = 'width: 1000000px; height: 200em;';
+        const expected = {width: '1000000px', height: '200em'};
         expect(cssToJson(input)).toEqual(expected);
     });
 
@@ -210,36 +242,19 @@ describe('parseValue', () => {
             expect(result).toEqual(expected, `Parsing ${input} should give ${JSON.stringify(expected)}`);
         });
     });
+
+    it('should handle uncommon units', () => {
+        const testCases = [
+            {input: '5ch', expected: {value: 0, unit: '%'}}, // not supported, fallback
+            {input: '10ex', expected: {value: 0, unit: '%'}}, // not supported, fallback
+        ];
+        testCases.forEach(({input, expected}) => {
+            expect(parseValue(input)).toEqual(expected);
+        });
+    });
 });
 
 describe('cropImage', () => {
-    // Setup function to create a clean DOM environment for each test
-    const setupDom = () => {
-        const dom = new JSDOM(`<!DOCTYPE html><html><body></body></html>`, {
-            url: 'http://localhost/',
-            pretendToBeVisual: true
-        });
-
-        // Set up globals
-        global.window = dom.window;
-        global.document = dom.window.document;
-        global.HTMLImageElement = dom.window.HTMLImageElement;
-
-        // Create test image element
-        const child = document.createElement('img');
-        child.src = 'test-image.jpg';
-        document.body.appendChild(child);
-
-        return {dom, child};
-    };
-
-    // Cleanup function to reset the DOM environment
-    const cleanup = () => {
-        delete global.window;
-        delete global.document;
-        delete global.HTMLImageElement;
-    };
-
     it('should set object-fit to cover for all cases', () => {
         const {child} = setupDom();
         try {
@@ -447,30 +462,6 @@ describe('cropImage', () => {
 });
 
 describe('calculateScaleFactor', () => {
-    // Setup function to create a clean DOM environment for each test
-    const setupDom = () => {
-        const dom = new JSDOM(`<!DOCTYPE html><html><body></body></html>`, {
-            url: 'http://localhost/',
-            pretendToBeVisual: true
-        });
-
-        // Set up globals
-        global.window = dom.window;
-        global.document = dom.window.document;
-
-        // Set default window size for tests
-        global.window.innerWidth = 1000;
-        global.window.innerHeight = 1000;
-
-        return {dom};
-    };
-
-    // Cleanup function to reset the DOM environment
-    const cleanup = () => {
-        delete global.window;
-        delete global.document;
-    };
-
     it('should calculate correct scale factor for percentage values', () => {
         const {dom} = setupDom();
         try {
@@ -651,6 +642,55 @@ describe('calculateScaleFactor', () => {
             // With negative values: visible area is 120%, scale = 100/120 = 0.83
             // But we use Math.max(scaleX, scaleY, 1) to not scale down below 1
             expect(scaleFactor).toEqual(1);
+        }
+        finally {
+            cleanup();
+        }
+    });
+});
+
+describe('NxaImage Debug Property', () => {
+    it('should have debug property with default value false', () => {
+        const {dom} = setupDom();
+        try {
+            // Create a new instance
+            const component = new NxaImage();
+
+            // Check that debug property exists and defaults to false
+            expect(component.debug).toBe(false);
+        }
+        finally {
+            cleanup();
+        }
+    });
+
+    it('should enable debug logging when debug property is set to true', () => {
+        const {dom} = setupDom();
+        try {
+            const originalConsoleLog = console.log;
+            const mockLog = vi.fn();
+            console.log = mockLog;
+            const component = new NxaImage();
+            component.debug = true;
+            component.debugLog('Test debug message', {test: 'data'});
+            expect(mockLog).toHaveBeenCalledWith('[nxa-image] Test debug message', {test: 'data'});
+            console.log = originalConsoleLog;
+        }
+        finally {
+            cleanup();
+        }
+    });
+    it('should not log when debug property is false', () => {
+        const {dom} = setupDom();
+        try {
+            const originalConsoleLog = console.log;
+            const mockLog = vi.fn();
+            console.log = mockLog;
+            const component = new NxaImage();
+            component.debug = false;
+            component.debugLog('Test debug message', {test: 'data'});
+            expect(mockLog).not.toHaveBeenCalled();
+            console.log = originalConsoleLog;
         }
         finally {
             cleanup();
