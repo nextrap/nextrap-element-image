@@ -262,11 +262,13 @@ export const getSlideshowStyles = (transition?: string): string => {
           left: 0;
           right: 0;
           bottom: 0;
+          pointer-events: none;
         }
 
         nxa-image.slideshow img.active {
           opacity: 1;
           z-index: 1;
+          pointer-events: auto;
         }
 
         ${transition === "blend" ? `
@@ -284,7 +286,6 @@ export const getSlideshowStyles = (transition?: string): string => {
 // Constants
 const SWIPE_THRESHOLD = 50;
 const TOUCH_RESET_DELAY = 300;
-const MOBILE_BREAKPOINT = 768;
 const TRANSITION_DURATION = 300;
 
 // Types
@@ -299,20 +300,6 @@ interface TouchState {
     isButtonTouch: boolean;
     isClosing: boolean;
     touchTarget: HTMLElement | null;
-}
-
-interface CropValues {
-    value: number;
-    unit: string;
-}
-
-interface CropData {
-    top?: string;
-    right?: string;
-    bottom?: string;
-    left?: string;
-    transform?: string;
-    position?: string;
 }
 
 /**
@@ -375,12 +362,12 @@ export const createFullsizeView = (img: HTMLImageElement, isMobileDevice: boolea
     if (onNext && onPrev) {
         // Check if we're in a slideshow context by looking for multiple images
         const isSlideshow = document.querySelectorAll('img').length > 1;
-        
+
         if (isSlideshow) {
             const prevBtn = document.createElement("button");
             prevBtn.className = "nxa-fullsize-nav-btn prev";
             prevBtn.innerHTML = "❮";
-            
+
             // Handle touch events for buttons
             prevBtn.addEventListener("touchstart", (e) => {
                 e.stopPropagation();
@@ -401,7 +388,7 @@ export const createFullsizeView = (img: HTMLImageElement, isMobileDevice: boolea
             const nextBtn = document.createElement("button");
             nextBtn.className = "nxa-fullsize-nav-btn next";
             nextBtn.innerHTML = "❯";
-            
+
             nextBtn.addEventListener("touchstart", (e) => {
                 e.stopPropagation();
                 if (touchState.isClosing) return;
@@ -460,19 +447,19 @@ export const createFullsizeView = (img: HTMLImageElement, isMobileDevice: boolea
     const handleTouchStart = (e: TouchEvent) => {
         // Only handle single touch and ignore if it's a button touch
         if (e.touches.length > 1 || touchState.isButtonTouch) return;
-        
+
         // Store the initial touch target
         touchState.touchTarget = e.target as HTMLElement;
-        
+
         // Don't handle touch if it's on the close button or image
         if (touchState.touchTarget === closeBtn || touchState.touchTarget === fullSizeImg) return;
-        
+
         touchState.startX = e.touches[0].clientX;
         touchState.startY = e.touches[0].clientY;
         touchState.isSwiping = false;
         touchState.touchHandled = false;
         touchState.touchStartTime = Date.now();
-        
+
         // Add a class to indicate touch is active
         container.classList.add('touch-active');
     };
@@ -497,14 +484,14 @@ export const createFullsizeView = (img: HTMLImageElement, isMobileDevice: boolea
         if (touchState.isSwiping && Math.abs(xDiff) > Math.abs(yDiff)) {
             e.preventDefault();
             touchState.touchHandled = true;
-            
+
             // Update end coordinates
             touchState.endX = currentX;
             touchState.endY = currentY;
         }
     };
 
-    const handleTouchEnd = (e: TouchEvent) => {
+    const handleTouchEnd = () => {
         if (touchState.isButtonTouch) {
             touchState.isButtonTouch = false;
             return;

@@ -30,6 +30,8 @@ import {style} from "./style";
  *
  * @attr {number} interval - Custom interval for slideshow transitions in milliseconds (default: 5000)
  *
+ * @attr {boolean} debug - Enables debug mode with detailed console logging for troubleshooting
+ *
  * @csspart image-container - The container for the images
  * @csspart caption-container - The container for the caption
  * @csspart indicators - The container for the slideshow indicators
@@ -66,7 +68,15 @@ export class NxaImage extends LitElement {
      * List of enabled features for the component.
      * Features are specified in the data-features attribute as space-separated values.
      */
-    @property({ type: Array }) dataFeatures: string[] = [];
+    @property({ type: Array, attribute: 'data-features', converter: {
+        fromAttribute: (value: string | null) => {
+            const result = value?.split(" ").filter(Boolean) || [];
+            return result;
+        },
+        toAttribute: (value: string[]) => {
+            return value.join(" ");
+        }
+    }}) dataFeatures: string[] = [];
 
     /**
      * Configuration object for slideshow functionality.
@@ -129,15 +139,15 @@ export class NxaImage extends LitElement {
     @property({ type: Function }) onImageClick?: (image: HTMLImageElement, event: MouseEvent) => void;
 
     /**
+     * Whether debug mode is enabled for this component.
+     * When enabled, detailed console logs will be output for debugging purposes.
+     */
+    @property({ type: Boolean }) debug: boolean = false;
+
+    /**
      * Whether the component is in fullscreen mode.
      */
     @state() isFullSizeActive: boolean = false;
-
-    /**
-     * Current interval ID for the slideshow timer.
-     * Used to manage and clean up the interval.
-     */
-    @state() slideInterval: number = 0;
 
     /**
      * Current caption text displayed below the active image.
@@ -224,6 +234,13 @@ export class NxaImage extends LitElement {
     private _resizeObserver: ResizeObserver | null = null;
 
     /**
+     * Bound event handlers for proper cleanup.
+     */
+    private _boundHandleResize: (() => void) | null = null;
+    private _boundPauseSlideshow: (() => void) | null = null;
+    private _boundResumeSlideshow: (() => void) | null = null;
+
+    /**
      * Creates a new NxaImage component.
      * Sets default width and height if not specified.
      */
@@ -238,15 +255,27 @@ export class NxaImage extends LitElement {
     }
 
     /**
+     * Logs debug messages to the console if debug mode is enabled.
+     * @param message The debug message
+     * @param data Optional additional data
+     */
+    debugLog(message: string, data?: any) {
+        if (this.debug) {
+            console.log(`[nxa-image] ${message}`, data);
+        }
+    }
+
+    /**
      * Lifecycle method called when the element is added to the DOM
      * Initializes properties, event listeners, and observers
      */
     connectedCallback() {
         super.connectedCallback();
+        this.debugLog('Component connected to DOM');
 
         // Initialize arrays and objects to ensure they exist
         this.childDataCrop = [];
-        this.dataFeatures = [];
+        // Don't manually initialize dataFeatures - let the reactive property system handle it
         this.slidesShowConfig = {};
         this.globalDataCrop = {};
 
@@ -258,9 +287,7 @@ export class NxaImage extends LitElement {
             this.childDataCrop[index] = cssToJson(child?.getAttribute("data-crop") || "");
         });
 
-        // Parse features and initialize slideshow config
-        this.dataFeatures = this.getAttribute("data-features")?.split(" ").filter(Boolean) || [];
-
+        // Initialize slideshow config (dataFeatures is now handled by reactive property)
         this.initSlidesShowConfig();
 
         // Check for captions
@@ -268,6 +295,7 @@ export class NxaImage extends LitElement {
         this.slidesShowConfig.showCaptions = children.some(child => child.getAttribute("data-caption") !== null);
 
         this.fullSize = this.dataFeatures.includes("fullsize");
+        this.debugLog('Fullsize property set', { fullSize: this.fullSize, dataFeatures: this.dataFeatures });
 
         // Set roundBorders based on data-features
         this.roundBorders = this.dataFeatures.includes("round-borders");
@@ -303,7 +331,14 @@ export class NxaImage extends LitElement {
         }
 
         // Add resize listener
-        window.addEventListener('resize', this.handleResize);
+        this._boundHandleResize = this.handleResize.bind(this);
+        window.addEventListener('resize', this._boundHandleResize);
+
+        // Check if we need to restart slideshow (in case of rapid reconnection)
+        // Use a small delay to allow the component to stabilize
+        setTimeout(() => {
+            this.checkAndRestartSlideshow();
+        }, 100);
     }
 
     /**
@@ -325,16 +360,78 @@ export class NxaImage extends LitElement {
             this.removeEventListener('touchend', this.handleTouchEnd);
         }
 
-        // Remove the fullsize click handler
-        this.removeEventListener('click', this.handleFullsizeClick);
+        // Remove the fullsize click handlers only if fullsize is enabled
+        if (this.fullSize) {
+            this.removeFullsizeClickHandlers();
+        }
 
-        window.removeEventListener('resize', this.handleResize);
+        // Remove bound event listeners
+        if (this._boundHandleResize) {
+            window.removeEventListener('resize', this._boundHandleResize);
+            this._boundHandleResize = null;
+        }
+        if (this._boundPauseSlideshow) {
+            this.removeEventListener('mouseenter', this._boundPauseSlideshow);
+            this._boundPauseSlideshow = null;
+        }
+        if (this._boundResumeSlideshow) {
+            this.removeEventListener('mouseleave', this._boundResumeSlideshow);
+            this._boundResumeSlideshow = null;
+        }
     }
 
     private clearInterval() {
         if (this._intervalId !== null) {
             clearInterval(this._intervalId);
             this._intervalId = null;
+        }
+    }
+
+    /**
+     * Lifecycle method called before each update
+     * Handles changes to reactive properties
+     */
+    willUpdate(changedProperties: Map<string, any>) {
+        super.willUpdate(changedProperties);
+
+        if (changedProperties.has('dataFeatures')) {
+            this.debugLog('dataFeatures changed', {
+                oldValue: changedProperties.get('dataFeatures'),
+                newValue: this.dataFeatures
+            });
+
+            this.debugLog('dataFeatures updated', {
+                dataFeatures: this.dataFeatures,
+                includesFullsize: this.dataFeatures.includes("fullsize")
+            });
+
+            // Update fullSize property
+            const wasFullSize = this.fullSize;
+            this.fullSize = this.dataFeatures.includes("fullsize");
+
+            this.debugLog('Fullsize state changed', { wasFullSize, newFullSize: this.fullSize });
+
+            // Handle fullsize feature changes
+            if (wasFullSize !== this.fullSize) {
+                if (this.fullSize) {
+                    this.initFullSize();
+                    this.debugLog('Fullsize feature enabled');
+                } else {
+                    this.removeFullsizeClickHandlers();
+                    this.debugLog('Fullsize feature disabled');
+                }
+            }
+
+            // Reinitialize slideshow config
+            this.initSlidesShowConfig();
+
+            // Update roundBorders
+            this.roundBorders = this.dataFeatures.includes("round-borders");
+            if (this.roundBorders && !this.currentCaption) {
+                this.classList.add('round-borders');
+            } else {
+                this.classList.remove('round-borders');
+            }
         }
     }
 
@@ -355,9 +452,10 @@ export class NxaImage extends LitElement {
         }
 
         this.preventImageDrag();
-
         this.requestUpdate();
     }
+
+
 
     /**
      * Renders the component template
@@ -406,6 +504,13 @@ export class NxaImage extends LitElement {
 
         if (this.slidesShowConfig.enabled) {
             this.attachSlideshowStyles();
+        }
+
+        // Reinitialize fullsize feature if enabled
+        if (this.fullSize) {
+            // Remove old handlers and add new ones for any new images
+            this.removeFullsizeClickHandlers();
+            this.addFullsizeClickHandlers();
         }
     }
 
@@ -471,59 +576,146 @@ export class NxaImage extends LitElement {
      * Initializes the fullsize view functionality for images
      */
     initFullSize() {
-        // Remove any existing click handler
-        this.removeEventListener('click', this.handleFullsizeClick);
-        
-        // Add a single delegated click handler to the component
-        this.addEventListener('click', this.handleFullsizeClick);
+        this.debugLog('Initializing fullsize feature');
+
+        // Remove any existing click handlers from images
+        this.removeFullsizeClickHandlers();
+
+        // Add click handlers with a small delay to ensure images are loaded
+        setTimeout(() => {
+            this.addFullsizeClickHandlers();
+            this.debugLog('Fullsize click handlers added to images (delayed)');
+        }, 100);
+    }
+
+    /**
+     * Adds click handlers to all images for fullsize functionality
+     */
+    private addFullsizeClickHandlers() {
+        const images = Array.from(this.querySelectorAll('img'));
+        this.debugLog('Adding click handlers to images', {
+            imageCount: images.length,
+            fullSize: this.fullSize,
+            dataFeatures: this.dataFeatures
+        });
+
+        if (images.length === 0) {
+            this.debugLog('No images found in component');
+            return;
+        }
+
+        // Wait for all images to be loaded
+        const imagePromises = images.map(img => {
+            if (img.complete) {
+                return Promise.resolve();
+            }
+            return new Promise((resolve) => {
+                img.onload = resolve;
+                img.onerror = resolve; // Also resolve on error to not block
+            });
+        });
+
+        Promise.all(imagePromises).then(() => {
+            this.debugLog('All images loaded, adding click handlers');
+
+            images.forEach((img, index) => {
+                // Remove any existing click handler first
+                img.removeEventListener('click', this.handleFullsizeClick);
+
+                // Add the click handler
+                img.addEventListener('click', this.handleFullsizeClick, { capture: true });
+
+                // Test if the click handler is actually attached
+                const hasListener = img.onclick !== null || img.hasAttribute('onclick');
+                this.debugLog(`Added click handler to image ${index}`, {
+                    src: img.src,
+                    hasListener: hasListener,
+                    imgOnClick: img.onclick,
+                    imgHasOnclickAttr: img.hasAttribute('onclick'),
+                    imgComplete: img.complete,
+                    imgNaturalWidth: img.naturalWidth,
+                    imgNaturalHeight: img.naturalHeight
+                });
+
+                // Add a test click handler to see if clicks are being captured at all
+                img.addEventListener('click', (e) => {
+                    this.debugLog('Test click detected on image', { src: img.src, event: e });
+                }, { capture: true });
+            });
+        });
+    }
+
+    /**
+     * Removes click handlers from all images
+     */
+    private removeFullsizeClickHandlers() {
+        const images = Array.from(this.querySelectorAll('img'));
+        images.forEach(img => {
+            img.removeEventListener('click', this.handleFullsizeClick);
+        });
     }
 
     /**
      * Handles click events for fullsize view
      */
     private handleFullsizeClick = (event: MouseEvent) => {
-        // Only handle clicks on images
-        const target = event.target as HTMLElement;
-        if (!(target instanceof HTMLImageElement)) {
-            return;
-        }
+        // The target should always be an image since we're adding the listener directly to images
+        const target = event.target as HTMLImageElement;
 
         event.stopPropagation();
+        this.debugLog('Image clicked for fullsize view', { src: target.src, fullSize: this.fullSize });
 
         // Call onImageClick callback if provided
         if (this.onImageClick) {
             this.onImageClick(target, event);
+            this.debugLog('onImageClick callback called');
         }
 
         // For slideshow, use the active image; otherwise use the clicked image
         let img: HTMLImageElement;
         if (this.slidesShowConfig.enabled) {
             img = this.querySelector("img.active") as HTMLImageElement || target;
+            this.debugLog('Using active slide for fullsize view', { src: img.src });
         } else {
             img = target;
+            this.debugLog('Using clicked image for fullsize view', { src: img.src });
         }
 
         if (img) {
             this.isFullSizeActive = true;
+            this.debugLog('Setting isFullSizeActive to true');
+
             if (this.slidesShowConfig.enabled) {
                 this.pauseSlideshow();
             }
 
             const onClose = () => {
                 this.isFullSizeActive = false;
+                this.debugLog('Fullsize view closed');
                 if (this.onFullscreenExit) {
                     this.onFullscreenExit(img);
+                    this.debugLog('onFullscreenExit callback called');
                 }
                 if (this.slidesShowConfig.enabled) {
                     this.resumeSlideshow();
                 }
             }
 
+            this.debugLog('Calling createFullsizeView', {
+                imgSrc: img.src,
+                isMobileDevice: this.isMobileDevice,
+                hasOnNext: !!this.handleFullscreenNext,
+                hasOnPrev: !!this.handleFullscreenPrev
+            });
+
             createFullsizeView(img, this.isMobileDevice, onClose, this.handleFullscreenNext, this.handleFullscreenPrev);
 
             if (this.onFullscreenEnter) {
                 this.onFullscreenEnter(img);
+                this.debugLog('onFullscreenEnter callback called');
             }
+        } else {
+            this.debugLog('No image found for fullsize view');
         }
     }
 
@@ -551,6 +743,11 @@ export class NxaImage extends LitElement {
 
         // Add slideshow class to host
         this.classList.add("slideshow");
+
+        // Ensure fullsize click handlers are added to all images
+        if (this.fullSize) {
+            this.addFullsizeClickHandlers();
+        }
     }
 
     /**
@@ -569,11 +766,19 @@ export class NxaImage extends LitElement {
         const progressIncrement = (progressUpdateInterval / interval) * 100;
 
         this._intervalId = window.setInterval(() => {
+            // Check if component is still connected to DOM
+            if (!this.isConnected) {
+                this.debugLog('Component disconnected, clearing interval');
+                this.clearInterval();
+                return;
+            }
+
             if (!this.isPaused) {
                 this.slideProgress += progressIncrement;
 
                 if (this.slideProgress >= 100) {
                     this.slideProgress = 0;
+                    this.debugLog('Slideshow advancing to next slide');
                     this.nextSlide();
                 }
 
@@ -582,8 +787,10 @@ export class NxaImage extends LitElement {
         }, progressUpdateInterval);
 
         if (this.slidesShowConfig.pauseOnHover) {
-            this.addEventListener('mouseenter', this.pauseSlideshow);
-            this.addEventListener('mouseleave', this.resumeSlideshow);
+            this._boundPauseSlideshow = this.pauseSlideshow.bind(this);
+            this._boundResumeSlideshow = this.resumeSlideshow.bind(this);
+            this.addEventListener('mouseenter', this._boundPauseSlideshow);
+            this.addEventListener('mouseleave', this._boundResumeSlideshow);
         }
     }
 
@@ -755,8 +962,8 @@ export class NxaImage extends LitElement {
         }
 
         // Reset interval
-        if (this.slideInterval) {
-            clearInterval(this.slideInterval);
+        if (this._intervalId !== null) {
+            this.clearInterval();
             this.initSlideshowInterval();
         }
     }
@@ -768,7 +975,7 @@ export class NxaImage extends LitElement {
     private handleTouchStart(e: TouchEvent) {
         // Don't handle touch events when in fullscreen mode
         if (this.isFullSizeActive) return;
-        
+
         this.touchStartX = e.touches[0].clientX;
         this.touchStartY = e.touches[0].clientY;
     }
@@ -780,7 +987,7 @@ export class NxaImage extends LitElement {
     private handleTouchEnd(e: TouchEvent) {
         // Don't handle touch events when in fullscreen mode
         if (this.isFullSizeActive) return;
-        
+
         // Only proceed if slideshow is enabled
         if (!this.slidesShowConfig.enabled) return;
 
@@ -811,7 +1018,7 @@ export class NxaImage extends LitElement {
     private handleTouchMove = (e: TouchEvent) => {
         // Don't handle touch events when in fullscreen mode
         if (this.isFullSizeActive) return;
-        
+
         if (!this.isSwiping) return;
 
         this.touchEndX = e.touches[0].clientX;
@@ -890,6 +1097,16 @@ export class NxaImage extends LitElement {
         // If mobile status changed, update the component
         if (wasMobile !== this.isMobileDevice) {
             this.requestUpdate();
+        }
+    }
+
+    /**
+     * Checks if the slideshow needs to be restarted due to rapid reconnection
+     */
+    private checkAndRestartSlideshow() {
+        // If slideshow is enabled but no interval is running, restart it
+        if (this.slidesShowConfig.enabled && this._intervalId === null) {
+            this.initSlideshowInterval();
         }
     }
 
