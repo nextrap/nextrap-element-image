@@ -45,6 +45,24 @@ Dabei beziehen sich die Prozent-Werte auf die Höhe und Breite des Bildes.
 Bei option Fullsize kann das Bild angeklickt werden. Es öffnet sich ein Modal mit dem Bild in voller Größe.
 (Siehe modal).
 
+### Debug Mode
+
+Der Debug-Modus kann über das `debug` Attribut aktiviert werden. Wenn aktiviert, werden detaillierte Konsolen-Logs ausgegeben, die bei der Fehlersuche und dem Verständnis des Komponenten-Verhaltens helfen.
+
+```html
+<nxa-image style="width: 100%; height: 250px" data-features="slideshow" debug>
+    <img src="" style="object-position: top center;" data-caption="Bild 1">
+    <img src="" style="object-position: bottom center;" data-caption="Bild 2">
+</nxa-image>
+```
+
+Die Debug-Logs zeigen Informationen über:
+- Komponenten-Initialisierung
+- Slideshow-Konfiguration
+- Bildwechsel und Navigation
+- Touch-Events und Swipe-Gesten
+- Fullsize-View Interaktionen
+- Callback-Aufrufe
 
 ### SwipeDetection
 
