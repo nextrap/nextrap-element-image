@@ -25,6 +25,9 @@ export const style = css`
         height: inherit;
         user-select: none;
         -webkit-user-drag: none;
+        cursor: pointer;
+        position: relative;
+        z-index: 1;
     }
 
     .navigation-arrows {
@@ -246,5 +249,15 @@ export const style = css`
         display: flex;
         flex-direction: column;
         overflow: hidden;
+    }
+
+    /* Fullsize feature visual indicator */
+    :host([data-features*="fullsize"]) ::slotted(img) {
+        cursor: zoom-in;
+        transition: transform 0.2s ease;
+    }
+
+    :host([data-features*="fullsize"]) ::slotted(img):hover {
+        transform: scale(1.02);
     }
 `;
