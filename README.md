@@ -289,7 +289,7 @@ This project is licensed under the terms specified in the [LICENSE.txt](LICENSE.
 
 ## Release Notes
 
-For detailed information about changes in each version, please refer to the [RELEASE_NOTES.md](RELEASE_NOTES.md) file.
+For detailed information about changes in each version, please take a look at the [RELEASE_NOTES.md](RELEASE_NOTES.md) file.
 
 ## Contributing
 
