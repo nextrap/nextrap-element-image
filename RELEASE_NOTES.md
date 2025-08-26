@@ -5,6 +5,145 @@ All notable changes to the Nextrap Element Image project will be documented in t
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.2] - 2025-08-25 - Multiple Instance Support & Conflict Resolution
+
+### Testing Infrastructure
+This release includes a comprehensive testing suite to validate multiple instance functionality:
+
+#### **Test Dashboard** (`test-dashboard.html`)
+- Central navigation hub for all test scenarios
+- Professional UI with test categorization
+- Quick access to critical test cases
+- System status monitoring
+
+#### **Multiple Instance Test** (`test-multiple-instances.html`)
+- Basic functionality verification
+- 4 different instance configurations
+- Interactive testing controls
+- Real-time console output
+
+#### **Fullscreen Isolation Test** (`test-fullscreen-isolation.html`)
+- Multiple fullscreen views coexistence
+- Instance-specific fullscreen elements
+- Navigation testing in fullscreen mode
+- Stress testing with multiple open views
+
+#### **Slideshow Independence Test** (`test-slideshow-independence.html`)
+- Multiple slideshows at different intervals
+- Independent timer management
+- Navigation control testing
+- Performance metrics monitoring
+
+#### **Performance & Memory Test** (`test-performance.html`)
+- Real-time performance monitoring
+- Dynamic instance creation/destruction
+- Memory usage tracking
+- Stress testing with up to 20 instances
+- Memory leak detection
+- Performance data export
+
+#### **Development Integration**
+- Automatic dashboard opening with `npm run dev`
+- Vite server configuration for testing
+- Hot reload support for test files
+- Professional testing environment
+
+### Fixed
+- **Critical**: Fixed conflicts when rendering multiple instances of the component on the same page
+  - Added unique instance ID generation for each component instance
+  - Made slideshow style IDs unique per instance to prevent style conflicts
+  - Scoped fullscreen element queries to instance-specific selectors
+  - Updated fullscreen creation utility to support instance-specific elements
+  - Added instance ID attributes to all fullscreen DOM elements for proper isolation
+
+### Changed
+- Modified `createFullsizeView` utility function to accept optional `instanceId` parameter
+- Updated fullscreen element cleanup to be instance-aware
+- Enhanced DOM query selectors to use instance-specific attributes
+- Improved fullscreen navigation button handling for multiple instances
+
+### Added
+- **Comprehensive Testing Infrastructure**: Complete testing suite for multiple instance functionality
+  - **Test Dashboard** (`test-dashboard.html`) - Central navigation hub with test overview
+  - **Multiple Instance Test** (`test-multiple-instances.html`) - Basic functionality verification
+  - **Fullscreen Isolation Test** (`test-fullscreen-isolation.html`) - Fullscreen conflict testing
+  - **Slideshow Independence Test** (`test-slideshow-independence.html`) - Slideshow conflict testing
+  - **Performance & Memory Test** (`test-performance.html`) - Performance monitoring and stress testing
+
+### Technical Details
+- Each component instance now generates a unique ID using `nxa-image-{random}` format
+- Fullscreen elements are now scoped with `data-instance` attributes
+- Slideshow styles use instance-specific IDs to prevent conflicts
+- All DOM queries for fullscreen elements now include instance filtering
+- **Testing Infrastructure**: Professional-grade testing suite with real-time monitoring
+- **Vite Integration**: Automatic dashboard opening when running `npm run dev`
+- **Performance Metrics**: Real-time monitoring of memory usage, FPS, DOM nodes, and event listeners
+- **Stress Testing**: Dynamic instance creation/destruction for performance validation
+- **Memory Leak Detection**: Automated detection of potential memory issues
+- **Console Integration**: Comprehensive logging and debugging support across all test scenarios
+
+### Testing Workflow
+The testing suite provides a structured approach to validating multiple instance functionality:
+
+#### **Quick Start**
+1. Run `npm run dev` to start the development server
+2. Test dashboard automatically opens in browser
+3. Navigate between different test scenarios
+4. Monitor real-time performance metrics
+
+#### **Test Scenarios**
+- **Basic Functionality**: Verify multiple instances load without conflicts
+- **Fullscreen Isolation**: Test multiple fullscreen views coexisting
+- **Slideshow Independence**: Verify slideshows run at different speeds
+- **Performance Under Load**: Monitor behavior with 20+ instances
+- **Memory Management**: Detect potential memory leaks
+
+#### **Expected Results**
+- ✅ All instances load independently
+- ✅ No style conflicts between instances
+- ✅ Fullscreen views are completely isolated
+- ✅ Slideshows run at different intervals
+- ✅ Performance remains stable under load
+- ✅ No memory leaks or resource conflicts
+
+### Testing Infrastructure Technical Details
+
+#### **Architecture**
+- **Modular Design**: Each test file focuses on specific functionality
+- **Consistent Navigation**: Unified navigation system across all tests
+- **Responsive UI**: Mobile-friendly testing interface
+- **Real-time Monitoring**: Live performance metrics and console output
+
+#### **Performance Monitoring**
+- **Memory Usage**: Simulated memory consumption tracking
+- **FPS Monitoring**: Frame rate performance measurement
+- **DOM Node Count**: Total DOM element tracking
+- **Event Listener Count**: Active event handler monitoring
+- **Interval Tracking**: Running slideshow timer count
+
+#### **Stress Testing Capabilities**
+- **Dynamic Instance Creation**: Programmatic instance generation
+- **Load Testing**: Up to 20 simultaneous instances
+- **Memory Leak Detection**: Automated resource monitoring
+- **Performance Regression**: Baseline performance comparison
+- **Data Export**: JSON export of performance metrics
+
+#### **Development Experience**
+- **Hot Reload**: Instant test file updates
+- **Console Integration**: Captured console output display
+- **Error Reporting**: Visual error and success indicators
+- **Test Results**: Persistent test result logging
+- **Navigation**: Easy switching between test scenarios
+
+## [1.2.1] - 2025-07-12 - Bug Fixes & Reliability Improvements
+
+### Changed
+- Fixed minor bugs and improved overall reliability
+- Enhanced event handling system for better performance
+- Updated documentation for event callbacks and usage examples
+- Relocated test image asset for improved Storybook integration
+- Extend with "debug" attribute to enable debug mode for development purposes
+
 ## [1.2.0] - 2023-11-20 - Enhanced Mobile Experience & Fullscreen Navigation
 
 ### Added

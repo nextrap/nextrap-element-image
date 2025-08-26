@@ -1,15 +1,18 @@
-import {html, LitElement} from 'lit';
-import {customElement, property, state} from 'lit/decorators.js';
+import { html, LitElement } from "lit";
+import { customElement, property, state } from "lit/decorators.js";
 import {
     cropImage,
     cssToJson,
     createFullsizeView,
     getSlideshowStyles,
-    detectMobileDevice
+    detectMobileDevice,
 } from "./nxa-image.utils";
-import {defaultSlideshowInterval, SlideShowTransitions} from "./nxa-image.types";
+import {
+    defaultSlideshowInterval,
+    SlideShowTransitions,
+} from "./nxa-image.types";
 import type { SlideShowConfig } from "./nxa-image.types";
-import {style} from "./style";
+import { style } from "./style";
 
 /**
  * NxaImage component - A versatile image display component with slideshow, fullscreen, and cropping capabilities.
@@ -48,7 +51,7 @@ import {style} from "./style";
  *   - data-crop: Individual crop settings for this image (overrides global settings)
  *   - style="object-position: X Y": Controls the focus point of the image
  */
-@customElement('nxa-image')
+@customElement("nxa-image")
 export class NxaImage extends LitElement {
     static styles = style;
 
@@ -56,7 +59,7 @@ export class NxaImage extends LitElement {
      * Global crop settings applied to all images in the component.
      * Can be overridden by individual image crop settings.
      */
-    @property({type: Object}) globalDataCrop: Record<string, string> = {};
+    @property({ type: Object }) globalDataCrop: Record<string, string> = {};
 
     /**
      * Array of crop settings for each individual image.
@@ -68,15 +71,20 @@ export class NxaImage extends LitElement {
      * List of enabled features for the component.
      * Features are specified in the data-features attribute as space-separated values.
      */
-    @property({ type: Array, attribute: 'data-features', converter: {
-        fromAttribute: (value: string | null) => {
-            const result = value?.split(" ").filter(Boolean) || [];
-            return result;
+    @property({
+        type: Array,
+        attribute: "data-features",
+        converter: {
+            fromAttribute: (value: string | null) => {
+                const result = value?.split(" ").filter(Boolean) || [];
+                return result;
+            },
+            toAttribute: (value: string[]) => {
+                return value.join(" ");
+            },
         },
-        toAttribute: (value: string[]) => {
-            return value.join(" ");
-        }
-    }}) dataFeatures: string[] = [];
+    })
+    dataFeatures: string[] = [];
 
     /**
      * Configuration object for slideshow functionality.
@@ -106,37 +114,51 @@ export class NxaImage extends LitElement {
      * Callback function called when the active slide changes.
      * Receives the index of the new active slide and the image element.
      */
-    @property({ type: Function }) onSlideChange?: (index: number, image: HTMLImageElement) => void;
+    @property({ type: Function }) onSlideChange?: (
+        index: number,
+        image: HTMLImageElement
+    ) => void;
 
     /**
      * Callback function called when entering fullscreen mode.
      * Receives the image element that was clicked.
      */
-    @property({ type: Function }) onFullscreenEnter?: (image: HTMLImageElement) => void;
+    @property({ type: Function }) onFullscreenEnter?: (
+        image: HTMLImageElement
+    ) => void;
 
     /**
      * Callback function called when exiting fullscreen mode.
      * Receives the image element that was in fullscreen.
      */
-    @property({ type: Function }) onFullscreenExit?: (image: HTMLImageElement) => void;
+    @property({ type: Function }) onFullscreenExit?: (
+        image: HTMLImageElement
+    ) => void;
 
     /**
      * Callback function called when the slideshow is paused.
      * Receives the current active image element.
      */
-    @property({ type: Function }) onSlideshowPause?: (image: HTMLImageElement) => void;
+    @property({ type: Function }) onSlideshowPause?: (
+        image: HTMLImageElement
+    ) => void;
 
     /**
      * Callback function called when the slideshow is resumed.
      * Receives the current active image element.
      */
-    @property({ type: Function }) onSlideshowResume?: (image: HTMLImageElement) => void;
+    @property({ type: Function }) onSlideshowResume?: (
+        image: HTMLImageElement
+    ) => void;
 
     /**
      * Callback function called when an image is clicked.
      * Receives the clicked image element and the click event.
      */
-    @property({ type: Function }) onImageClick?: (image: HTMLImageElement, event: MouseEvent) => void;
+    @property({ type: Function }) onImageClick?: (
+        image: HTMLImageElement,
+        event: MouseEvent
+    ) => void;
 
     /**
      * Whether debug mode is enabled for this component.
@@ -153,7 +175,7 @@ export class NxaImage extends LitElement {
      * Current caption text displayed below the active image.
      * Updated when slides change or when a new image becomes active.
      */
-    @state() currentCaption: string = '';
+    @state() currentCaption: string = "";
 
     /**
      * X-coordinate of the touch start position.
@@ -241,16 +263,22 @@ export class NxaImage extends LitElement {
     private _boundResumeSlideshow: (() => void) | null = null;
 
     /**
+     * Unique instance ID to prevent conflicts when multiple instances exist on the same page.
+     */
+    private _instanceId: string;
+
+    /**
      * Creates a new NxaImage component.
      * Sets default width and height if not specified.
      */
     constructor() {
         super();
+        this._instanceId = `nxa-image-${Math.random().toString(36).substr(2, 9)}`;
         if (!this.style.width) {
-            this.style.width = '100%';
+            this.style.width = "100%";
         }
         if (!this.style.height) {
-            this.style.height = '100%';
+            this.style.height = "100%";
         }
     }
 
@@ -271,7 +299,7 @@ export class NxaImage extends LitElement {
      */
     connectedCallback() {
         super.connectedCallback();
-        this.debugLog('Component connected to DOM');
+        this.debugLog("Component connected to DOM");
 
         // Initialize arrays and objects to ensure they exist
         this.childDataCrop = [];
@@ -284,7 +312,9 @@ export class NxaImage extends LitElement {
 
         // Get child data-crop attributes
         Array.from(this.children).forEach((child, index) => {
-            this.childDataCrop[index] = cssToJson(child?.getAttribute("data-crop") || "");
+            this.childDataCrop[index] = cssToJson(
+                child?.getAttribute("data-crop") || ""
+            );
         });
 
         // Initialize slideshow config (dataFeatures is now handled by reactive property)
@@ -292,19 +322,24 @@ export class NxaImage extends LitElement {
 
         // Check for captions
         const children = Array.from(this.children) as HTMLElement[];
-        this.slidesShowConfig.showCaptions = children.some(child => child.getAttribute("data-caption") !== null);
+        this.slidesShowConfig.showCaptions = children.some(
+            (child) => child.getAttribute("data-caption") !== null
+        );
 
         this.fullSize = this.dataFeatures.includes("fullsize");
-        this.debugLog('Fullsize property set', { fullSize: this.fullSize, dataFeatures: this.dataFeatures });
+        this.debugLog("Fullsize property set", {
+            fullSize: this.fullSize,
+            dataFeatures: this.dataFeatures,
+        });
 
         // Set roundBorders based on data-features
         this.roundBorders = this.dataFeatures.includes("round-borders");
 
         // Apply round-borders class if needed
         if (this.roundBorders && !this.currentCaption) {
-            this.classList.add('round-borders');
+            this.classList.add("round-borders");
         } else {
-            this.classList.remove('round-borders');
+            this.classList.remove("round-borders");
         }
 
         // Set initial caption
@@ -325,14 +360,20 @@ export class NxaImage extends LitElement {
         this.isMobileDevice = detectMobileDevice();
 
         if (this.isMobileDevice) {
-            this.addEventListener('touchstart', this.handleTouchStart, { passive: false });
-            this.addEventListener('touchmove', this.handleTouchMove, { passive: false });
-            this.addEventListener('touchend', this.handleTouchEnd, { passive: false });
+            this.addEventListener("touchstart", this.handleTouchStart, {
+                passive: false,
+            });
+            this.addEventListener("touchmove", this.handleTouchMove, {
+                passive: false,
+            });
+            this.addEventListener("touchend", this.handleTouchEnd, {
+                passive: false,
+            });
         }
 
         // Add resize listener
-        this._boundHandleResize = this.handleResize.bind(this);
-        window.addEventListener('resize', this._boundHandleResize);
+        this._boundHandleResize = this.handleResize;
+        window.addEventListener("resize", this._boundHandleResize);
 
         // Check if we need to restart slideshow (in case of rapid reconnection)
         // Use a small delay to allow the component to stabilize
@@ -355,9 +396,9 @@ export class NxaImage extends LitElement {
         }
 
         if (this.isMobileDevice) {
-            this.removeEventListener('touchstart', this.handleTouchStart);
-            this.removeEventListener('touchmove', this.handleTouchMove);
-            this.removeEventListener('touchend', this.handleTouchEnd);
+            this.removeEventListener("touchstart", this.handleTouchStart);
+            this.removeEventListener("touchmove", this.handleTouchMove);
+            this.removeEventListener("touchend", this.handleTouchEnd);
         }
 
         // Remove the fullsize click handlers only if fullsize is enabled
@@ -367,15 +408,15 @@ export class NxaImage extends LitElement {
 
         // Remove bound event listeners
         if (this._boundHandleResize) {
-            window.removeEventListener('resize', this._boundHandleResize);
+            window.removeEventListener("resize", this._boundHandleResize);
             this._boundHandleResize = null;
         }
         if (this._boundPauseSlideshow) {
-            this.removeEventListener('mouseenter', this._boundPauseSlideshow);
+            this.removeEventListener("mouseenter", this._boundPauseSlideshow);
             this._boundPauseSlideshow = null;
         }
         if (this._boundResumeSlideshow) {
-            this.removeEventListener('mouseleave', this._boundResumeSlideshow);
+            this.removeEventListener("mouseleave", this._boundResumeSlideshow);
             this._boundResumeSlideshow = null;
         }
     }
@@ -394,31 +435,34 @@ export class NxaImage extends LitElement {
     willUpdate(changedProperties: Map<string, any>) {
         super.willUpdate(changedProperties);
 
-        if (changedProperties.has('dataFeatures')) {
-            this.debugLog('dataFeatures changed', {
-                oldValue: changedProperties.get('dataFeatures'),
-                newValue: this.dataFeatures
+        if (changedProperties.has("dataFeatures")) {
+            this.debugLog("dataFeatures changed", {
+                oldValue: changedProperties.get("dataFeatures"),
+                newValue: this.dataFeatures,
             });
 
-            this.debugLog('dataFeatures updated', {
+            this.debugLog("dataFeatures updated", {
                 dataFeatures: this.dataFeatures,
-                includesFullsize: this.dataFeatures.includes("fullsize")
+                includesFullsize: this.dataFeatures.includes("fullsize"),
             });
 
             // Update fullSize property
             const wasFullSize = this.fullSize;
             this.fullSize = this.dataFeatures.includes("fullsize");
 
-            this.debugLog('Fullsize state changed', { wasFullSize, newFullSize: this.fullSize });
+            this.debugLog("Fullsize state changed", {
+                wasFullSize,
+                newFullSize: this.fullSize,
+            });
 
             // Handle fullsize feature changes
             if (wasFullSize !== this.fullSize) {
                 if (this.fullSize) {
                     this.initFullSize();
-                    this.debugLog('Fullsize feature enabled');
+                    this.debugLog("Fullsize feature enabled");
                 } else {
                     this.removeFullsizeClickHandlers();
-                    this.debugLog('Fullsize feature disabled');
+                    this.debugLog("Fullsize feature disabled");
                 }
             }
 
@@ -428,9 +472,9 @@ export class NxaImage extends LitElement {
             // Update roundBorders
             this.roundBorders = this.dataFeatures.includes("round-borders");
             if (this.roundBorders && !this.currentCaption) {
-                this.classList.add('round-borders');
+                this.classList.add("round-borders");
             } else {
-                this.classList.remove('round-borders');
+                this.classList.remove("round-borders");
             }
         }
     }
@@ -455,47 +499,66 @@ export class NxaImage extends LitElement {
         this.requestUpdate();
     }
 
-
-
     /**
      * Renders the component template
      * @returns The component's HTML template
      */
     render() {
         return html`
-        <div class="image-container">
-            <slot @slotchange=${this.handleSlotChange}></slot>
-            ${this.slidesShowConfig.showArrows && this.slidesShowConfig.enabled && !this.isMobileDevice ? html`
-                <div class="navigation-arrows">
-                    <button class="arrow-button prev" @click=${this.prevSlide}>&lt;</button>
-                    <button class="arrow-button next" @click=${this.nextSlide}>&gt;</button>
-                </div>
-            ` : ''}
-            ${this.slidesShowConfig.showIndicators && this.slidesShowConfig.enabled ? html`
-                <div class="indicators">
-                    ${this.renderIndicators()}
-                </div>
-            ` : ''}
-            ${this.slidesShowConfig.enabled && this.isPaused ? html`
-                <div class="pause-indicator">
-                    <div class="pause-icon"></div>
-                </div>
-            ` : ''}
-        </div>
-        <div class="caption-container">
-            <div class="caption">${this.currentCaption || ''}</div>
-        </div>
-    `;
+            <div class="image-container">
+                <slot @slotchange=${this.handleSlotChange}></slot>
+                ${this.slidesShowConfig.showArrows &&
+                this.slidesShowConfig.enabled &&
+                !this.isMobileDevice
+                    ? html`
+                          <div class="navigation-arrows">
+                              <button
+                                  class="arrow-button prev"
+                                  @click=${this.prevSlide}
+                              >
+                                  &lt;
+                              </button>
+                              <button
+                                  class="arrow-button next"
+                                  @click=${this.nextSlide}
+                              >
+                                  &gt;
+                              </button>
+                          </div>
+                      `
+                    : ""}
+                ${this.slidesShowConfig.showIndicators &&
+                this.slidesShowConfig.enabled
+                    ? html`
+                          <div class="indicators">
+                              ${this.renderIndicators()}
+                          </div>
+                      `
+                    : ""}
+                ${this.slidesShowConfig.enabled && this.isPaused
+                    ? html`
+                          <div class="pause-indicator">
+                              <div class="pause-icon"></div>
+                          </div>
+                      `
+                    : ""}
+            </div>
+            <div class="caption-container">
+                <div class="caption">${this.currentCaption || ""}</div>
+            </div>
+        `;
     }
 
     /**
      * Handles changes to the slotted content
      * Updates crop data, captions, and reinitializes features
      */
-    handleSlotChange() {
+    handleSlotChange = () => {
         this.childDataCrop = [];
         Array.from(this.children).forEach((child, index) => {
-            this.childDataCrop[index] = cssToJson(child?.getAttribute("data-crop") || "");
+            this.childDataCrop[index] = cssToJson(
+                child?.getAttribute("data-crop") || ""
+            );
         });
 
         this.cropImages();
@@ -512,16 +575,19 @@ export class NxaImage extends LitElement {
             this.removeFullsizeClickHandlers();
             this.addFullsizeClickHandlers();
         }
-    }
+    };
 
     /**
      * Updates the current caption based on the active slide or first image
      */
     updateCurrentCaption() {
         if (this.slidesShowConfig.enabled) {
-            const activeSlide = this.querySelector("img.active") as HTMLImageElement;
+            const activeSlide = this.querySelector(
+                "img.active"
+            ) as HTMLImageElement;
             if (activeSlide) {
-                this.currentCaption = activeSlide.getAttribute("data-caption") || '';
+                this.currentCaption =
+                    activeSlide.getAttribute("data-caption") || "";
                 return;
             }
         }
@@ -529,7 +595,7 @@ export class NxaImage extends LitElement {
         // For non-slideshow, just get the first image's caption
         const firstImg = this.querySelector("img") as HTMLImageElement;
         if (firstImg) {
-            this.currentCaption = firstImg.getAttribute("data-caption") || '';
+            this.currentCaption = firstImg.getAttribute("data-caption") || "";
         }
     }
 
@@ -542,8 +608,10 @@ export class NxaImage extends LitElement {
 
         if (!this.slidesShowConfig.enabled) {
             // Check if there are multiple images and auto-enable slideshow
-            const imageCount = Array.from(this.children).filter(child =>
-                child instanceof HTMLImageElement || child.tagName.toLowerCase() === 'img'
+            const imageCount = Array.from(this.children).filter(
+                (child) =>
+                    child instanceof HTMLImageElement ||
+                    child.tagName.toLowerCase() === "img"
             ).length;
 
             if (imageCount > 1) {
@@ -557,16 +625,22 @@ export class NxaImage extends LitElement {
         }
 
         // Set default values
-        this.slidesShowConfig.interval = this.interval || defaultSlideshowInterval;
-        this.slidesShowConfig.pauseOnHover = !this.dataFeatures.includes("dont-pause-on-hover");
+        this.slidesShowConfig.interval =
+            this.interval || defaultSlideshowInterval;
+        this.slidesShowConfig.pauseOnHover = !this.dataFeatures.includes(
+            "dont-pause-on-hover"
+        );
 
         // Set transition effect TODO: Right now it looks always the same - it does not change with different values.
-        const transition = SlideShowTransitions.find(t => this.dataFeatures.includes(t));
+        const transition = SlideShowTransitions.find((t) =>
+            this.dataFeatures.includes(t)
+        );
         this.slidesShowConfig.transition = transition || "fade";
 
         // Set UI options
         this.slidesShowConfig.showArrows = this.dataFeatures.includes("arrows");
-        this.slidesShowConfig.showIndicators = this.dataFeatures.includes("indicators");
+        this.slidesShowConfig.showIndicators =
+            this.dataFeatures.includes("indicators");
 
         // Set roundBorders based on data-features
         this.roundBorders = this.dataFeatures.includes("round-borders");
@@ -576,7 +650,7 @@ export class NxaImage extends LitElement {
      * Initializes the fullsize view functionality for images
      */
     initFullSize() {
-        this.debugLog('Initializing fullsize feature');
+        this.debugLog("Initializing fullsize feature");
 
         // Remove any existing click handlers from images
         this.removeFullsizeClickHandlers();
@@ -584,7 +658,7 @@ export class NxaImage extends LitElement {
         // Add click handlers with a small delay to ensure images are loaded
         setTimeout(() => {
             this.addFullsizeClickHandlers();
-            this.debugLog('Fullsize click handlers added to images (delayed)');
+            this.debugLog("Fullsize click handlers added to images (delayed)");
         }, 100);
     }
 
@@ -592,20 +666,20 @@ export class NxaImage extends LitElement {
      * Adds click handlers to all images for fullsize functionality
      */
     private addFullsizeClickHandlers() {
-        const images = Array.from(this.querySelectorAll('img'));
-        this.debugLog('Adding click handlers to images', {
+        const images = Array.from(this.querySelectorAll("img"));
+        this.debugLog("Adding click handlers to images", {
             imageCount: images.length,
             fullSize: this.fullSize,
-            dataFeatures: this.dataFeatures
+            dataFeatures: this.dataFeatures,
         });
 
         if (images.length === 0) {
-            this.debugLog('No images found in component');
+            this.debugLog("No images found in component");
             return;
         }
 
         // Wait for all images to be loaded
-        const imagePromises = images.map(img => {
+        const imagePromises = images.map((img) => {
             if (img.complete) {
                 return Promise.resolve();
             }
@@ -616,31 +690,41 @@ export class NxaImage extends LitElement {
         });
 
         Promise.all(imagePromises).then(() => {
-            this.debugLog('All images loaded, adding click handlers');
+            this.debugLog("All images loaded, adding click handlers");
 
             images.forEach((img, index) => {
                 // Remove any existing click handler first
-                img.removeEventListener('click', this.handleFullsizeClick);
+                img.removeEventListener("click", this.handleFullsizeClick);
 
                 // Add the click handler
-                img.addEventListener('click', this.handleFullsizeClick, { capture: true });
+                img.addEventListener("click", this.handleFullsizeClick, {
+                    capture: true,
+                });
 
                 // Test if the click handler is actually attached
-                const hasListener = img.onclick !== null || img.hasAttribute('onclick');
+                const hasListener =
+                    img.onclick !== null || img.hasAttribute("onclick");
                 this.debugLog(`Added click handler to image ${index}`, {
                     src: img.src,
                     hasListener: hasListener,
                     imgOnClick: img.onclick,
-                    imgHasOnclickAttr: img.hasAttribute('onclick'),
+                    imgHasOnclickAttr: img.hasAttribute("onclick"),
                     imgComplete: img.complete,
                     imgNaturalWidth: img.naturalWidth,
-                    imgNaturalHeight: img.naturalHeight
+                    imgNaturalHeight: img.naturalHeight,
                 });
 
                 // Add a test click handler to see if clicks are being captured at all
-                img.addEventListener('click', (e) => {
-                    this.debugLog('Test click detected on image', { src: img.src, event: e });
-                }, { capture: true });
+                img.addEventListener(
+                    "click",
+                    (e) => {
+                        this.debugLog("Test click detected on image", {
+                            src: img.src,
+                            event: e,
+                        });
+                    },
+                    { capture: true }
+                );
             });
         });
     }
@@ -649,9 +733,9 @@ export class NxaImage extends LitElement {
      * Removes click handlers from all images
      */
     private removeFullsizeClickHandlers() {
-        const images = Array.from(this.querySelectorAll('img'));
-        images.forEach(img => {
-            img.removeEventListener('click', this.handleFullsizeClick);
+        const images = Array.from(this.querySelectorAll("img"));
+        images.forEach((img) => {
+            img.removeEventListener("click", this.handleFullsizeClick);
         });
     }
 
@@ -663,27 +747,36 @@ export class NxaImage extends LitElement {
         const target = event.target as HTMLImageElement;
 
         event.stopPropagation();
-        this.debugLog('Image clicked for fullsize view', { src: target.src, fullSize: this.fullSize });
+        this.debugLog("Image clicked for fullsize view", {
+            src: target.src,
+            fullSize: this.fullSize,
+        });
 
         // Call onImageClick callback if provided
         if (this.onImageClick) {
             this.onImageClick(target, event);
-            this.debugLog('onImageClick callback called');
+            this.debugLog("onImageClick callback called");
         }
 
         // For slideshow, use the active image; otherwise use the clicked image
         let img: HTMLImageElement;
         if (this.slidesShowConfig.enabled) {
-            img = this.querySelector("img.active") as HTMLImageElement || target;
-            this.debugLog('Using active slide for fullsize view', { src: img.src });
+            img =
+                (this.querySelector("img.active") as HTMLImageElement) ||
+                target;
+            this.debugLog("Using active slide for fullsize view", {
+                src: img.src,
+            });
         } else {
             img = target;
-            this.debugLog('Using clicked image for fullsize view', { src: img.src });
+            this.debugLog("Using clicked image for fullsize view", {
+                src: img.src,
+            });
         }
 
         if (img) {
             this.isFullSizeActive = true;
-            this.debugLog('Setting isFullSizeActive to true');
+            this.debugLog("Setting isFullSizeActive to true");
 
             if (this.slidesShowConfig.enabled) {
                 this.pauseSlideshow();
@@ -691,41 +784,48 @@ export class NxaImage extends LitElement {
 
             const onClose = () => {
                 this.isFullSizeActive = false;
-                this.debugLog('Fullsize view closed');
+                this.debugLog("Fullsize view closed");
                 if (this.onFullscreenExit) {
                     this.onFullscreenExit(img);
-                    this.debugLog('onFullscreenExit callback called');
+                    this.debugLog("onFullscreenExit callback called");
                 }
                 if (this.slidesShowConfig.enabled) {
                     this.resumeSlideshow();
                 }
-            }
+            };
 
-            this.debugLog('Calling createFullsizeView', {
+            this.debugLog("Calling createFullsizeView", {
                 imgSrc: img.src,
                 isMobileDevice: this.isMobileDevice,
                 hasOnNext: !!this.handleFullscreenNext,
-                hasOnPrev: !!this.handleFullscreenPrev
+                hasOnPrev: !!this.handleFullscreenPrev,
             });
 
-            createFullsizeView(img, this.isMobileDevice, onClose, this.handleFullscreenNext, this.handleFullscreenPrev);
+            createFullsizeView(
+                img,
+                this.isMobileDevice,
+                onClose,
+                this.handleFullscreenNext,
+                this.handleFullscreenPrev,
+                this._instanceId
+            );
 
             if (this.onFullscreenEnter) {
                 this.onFullscreenEnter(img);
-                this.debugLog('onFullscreenEnter callback called');
+                this.debugLog("onFullscreenEnter callback called");
             }
         } else {
-            this.debugLog('No image found for fullsize view');
+            this.debugLog("No image found for fullsize view");
         }
-    }
+    };
 
     /**
      * Attaches slideshow styles to the document and initializes the first slide
      */
     attachSlideshowStyles() {
         // Add active class to first image
-        const firstImg = Array.from(this.children).find(child =>
-            child instanceof HTMLImageElement
+        const firstImg = Array.from(this.children).find(
+            (child) => child instanceof HTMLImageElement
         ) as HTMLImageElement | undefined;
 
         if (firstImg) {
@@ -733,11 +833,13 @@ export class NxaImage extends LitElement {
         }
 
         // For slideshow styles, we need to add global styles
-        const styleId = 'nxa-image-slideshow-styles';
+        const styleId = `${this._instanceId}-slideshow-styles`;
         if (!document.getElementById(styleId)) {
-            const globalStyle = document.createElement('style');
+            const globalStyle = document.createElement("style");
             globalStyle.id = styleId;
-            globalStyle.textContent = getSlideshowStyles(this.slidesShowConfig.transition);
+            globalStyle.textContent = getSlideshowStyles(
+                this.slidesShowConfig.transition
+            );
             document.head.appendChild(globalStyle);
         }
 
@@ -756,7 +858,8 @@ export class NxaImage extends LitElement {
     initSlideshowInterval() {
         this.clearInterval();
 
-        const interval = this.slidesShowConfig.interval || defaultSlideshowInterval;
+        const interval =
+            this.slidesShowConfig.interval || defaultSlideshowInterval;
 
         // Reset progress
         this.slideProgress = 0;
@@ -768,7 +871,7 @@ export class NxaImage extends LitElement {
         this._intervalId = window.setInterval(() => {
             // Check if component is still connected to DOM
             if (!this.isConnected) {
-                this.debugLog('Component disconnected, clearing interval');
+                this.debugLog("Component disconnected, clearing interval");
                 this.clearInterval();
                 return;
             }
@@ -778,7 +881,7 @@ export class NxaImage extends LitElement {
 
                 if (this.slideProgress >= 100) {
                     this.slideProgress = 0;
-                    this.debugLog('Slideshow advancing to next slide');
+                    this.debugLog("Slideshow advancing to next slide");
                     this.nextSlide();
                 }
 
@@ -787,17 +890,17 @@ export class NxaImage extends LitElement {
         }, progressUpdateInterval);
 
         if (this.slidesShowConfig.pauseOnHover) {
-            this._boundPauseSlideshow = this.pauseSlideshow.bind(this);
-            this._boundResumeSlideshow = this.resumeSlideshow.bind(this);
-            this.addEventListener('mouseenter', this._boundPauseSlideshow);
-            this.addEventListener('mouseleave', this._boundResumeSlideshow);
+            this._boundPauseSlideshow = this.pauseSlideshow;
+            this._boundResumeSlideshow = this.resumeSlideshow;
+            this.addEventListener("mouseenter", this._boundPauseSlideshow);
+            this.addEventListener("mouseleave", this._boundResumeSlideshow);
         }
     }
 
     /**
      * Advances to the next slide in the slideshow
      */
-    nextSlide() {
+    nextSlide = () => {
         // Reset progress
         this.slideProgress = 0;
 
@@ -806,7 +909,9 @@ export class NxaImage extends LitElement {
             return;
         }
 
-        const nextSlide = activeSlide.nextElementSibling || this.querySelector("img:first-child");
+        const nextSlide =
+            activeSlide.nextElementSibling ||
+            this.querySelector("img:first-child");
         if (nextSlide) {
             activeSlide.classList.remove("active");
             nextSlide.classList.add("active");
@@ -816,19 +921,21 @@ export class NxaImage extends LitElement {
 
             // Call onSlideChange callback if provided
             if (this.onSlideChange) {
-                const index = Array.from(this.querySelectorAll('img')).indexOf(nextSlide as HTMLImageElement);
+                const index = Array.from(this.querySelectorAll("img")).indexOf(
+                    nextSlide as HTMLImageElement
+                );
                 this.onSlideChange(index, nextSlide as HTMLImageElement);
             }
         }
 
         // After updating the active slide, request an update to refresh indicators
         this.requestUpdate();
-    }
+    };
 
     /**
      * Goes to the previous slide in the slideshow
      */
-    prevSlide() {
+    prevSlide = () => {
         // Reset progress
         this.slideProgress = 0;
 
@@ -837,7 +944,9 @@ export class NxaImage extends LitElement {
             return;
         }
 
-        const prevSlide = activeSlide.previousElementSibling || this.querySelector("img:last-child");
+        const prevSlide =
+            activeSlide.previousElementSibling ||
+            this.querySelector("img:last-child");
         if (prevSlide) {
             activeSlide.classList.remove("active");
             prevSlide.classList.add("active");
@@ -847,42 +956,48 @@ export class NxaImage extends LitElement {
 
             // Call onSlideChange callback if provided
             if (this.onSlideChange) {
-                const index = Array.from(this.querySelectorAll('img')).indexOf(prevSlide as HTMLImageElement);
+                const index = Array.from(this.querySelectorAll("img")).indexOf(
+                    prevSlide as HTMLImageElement
+                );
                 this.onSlideChange(index, prevSlide as HTMLImageElement);
             }
         }
 
         // After updating the active slide, request an update to refresh indicators
         this.requestUpdate();
-    }
+    };
 
     /**
      * Pauses the slideshow
      */
-    private pauseSlideshow() {
+    private pauseSlideshow = () => {
         this.isPaused = true;
-        const activeImage = this.querySelector("img.active") as HTMLImageElement;
+        const activeImage = this.querySelector(
+            "img.active"
+        ) as HTMLImageElement;
         if (activeImage && this.onSlideshowPause) {
             this.onSlideshowPause(activeImage);
         }
         this.requestUpdate();
-    }
+    };
 
     /**
      * Resumes the slideshow
      */
-    private resumeSlideshow() {
+    private resumeSlideshow = () => {
         if (this.isFullSizeActive) {
             return;
         }
 
         this.isPaused = false;
-        const activeImage = this.querySelector("img.active") as HTMLImageElement;
+        const activeImage = this.querySelector(
+            "img.active"
+        ) as HTMLImageElement;
         if (activeImage && this.onSlideshowResume) {
             this.onSlideshowResume(activeImage);
         }
         this.requestUpdate();
-    }
+    };
 
     /**
      * Applies cropping to all images based on crop data
@@ -897,12 +1012,12 @@ export class NxaImage extends LitElement {
 
             const cropData = {
                 ...this.globalDataCrop,
-                ...this.childDataCrop[index]
+                ...this.childDataCrop[index],
             };
 
             const referenceSize = {
                 width: `${this.offsetWidth}px`,
-                height: `${this.offsetHeight}px`
+                height: `${this.offsetHeight}px`,
             };
 
             cropImage(child, cropData, referenceSize);
@@ -914,17 +1029,25 @@ export class NxaImage extends LitElement {
      * @returns Array of indicator elements
      */
     renderIndicators() {
-        const images = Array.from(this.querySelectorAll('img'));
+        const images = Array.from(this.querySelectorAll("img"));
         return images.map((_, index) => {
             const isActive = index === this.getCurrentSlideIndex();
             return html`
                 <div class="indicator-container">
-                    <div class="indicator ${isActive ? 'active' : ''}"
-                         @click=${() => this.goToSlide(index)}>
-                        ${isActive ? html`
-                            <div class="progress-bar ${this.isPaused ? 'paused' : ''}"
-                                 style="width: ${this.slideProgress}%"></div>
-                        ` : ''}
+                    <div
+                        class="indicator ${isActive ? "active" : ""}"
+                        @click=${() => this.goToSlide(index)}
+                    >
+                        ${isActive
+                            ? html`
+                                  <div
+                                      class="progress-bar ${this.isPaused
+                                          ? "paused"
+                                          : ""}"
+                                      style="width: ${this.slideProgress}%"
+                                  ></div>
+                              `
+                            : ""}
                     </div>
                 </div>
             `;
@@ -936,8 +1059,8 @@ export class NxaImage extends LitElement {
      * @returns The index of the active slide
      */
     getCurrentSlideIndex() {
-        const images = Array.from(this.querySelectorAll('img'));
-        const activeSlide = this.querySelector('img.active');
+        const images = Array.from(this.querySelectorAll("img"));
+        const activeSlide = this.querySelector("img.active");
         return images.indexOf(activeSlide as HTMLImageElement);
     }
 
@@ -949,15 +1072,15 @@ export class NxaImage extends LitElement {
         // Reset progress
         this.slideProgress = 0;
 
-        const images = Array.from(this.querySelectorAll('img'));
-        const activeSlide = this.querySelector('img.active');
+        const images = Array.from(this.querySelectorAll("img"));
+        const activeSlide = this.querySelector("img.active");
 
         if (activeSlide) {
-            activeSlide.classList.remove('active');
+            activeSlide.classList.remove("active");
         }
 
         if (images[index]) {
-            images[index].classList.add('active');
+            images[index].classList.add("active");
             this.updateCurrentCaption();
         }
 
@@ -1034,13 +1157,15 @@ export class NxaImage extends LitElement {
 
             // Update image position during swipe
             if (this.isFullSizeActive) {
-                const fullscreenImg = document.querySelector(".nxa-fullsize-image") as HTMLImageElement;
+                const fullscreenImg = document.querySelector(
+                    `.nxa-fullsize-image[data-instance="${this._instanceId}"]`
+                ) as HTMLImageElement;
                 if (fullscreenImg) {
                     fullscreenImg.style.transform = `translateX(${xDiff}px)`;
                 }
             }
         }
-    }
+    };
 
     /**
      * Handles next slide navigation in fullscreen mode
@@ -1048,21 +1173,27 @@ export class NxaImage extends LitElement {
     private handleFullscreenNext = () => {
         if (this.slidesShowConfig.enabled) {
             this.nextSlide();
-            const activeImg = this.querySelector("img.active") as HTMLImageElement;
+            const activeImg = this.querySelector(
+                "img.active"
+            ) as HTMLImageElement;
             if (activeImg) {
-                const fullscreenImg = document.querySelector(".nxa-fullsize-image") as HTMLImageElement;
-                const fullscreenBg = document.querySelector(".nxa-fullsize-bg") as HTMLDivElement;
+                const fullscreenImg = document.querySelector(
+                    `.nxa-fullsize-image[data-instance="${this._instanceId}"]`
+                ) as HTMLImageElement;
+                const fullscreenBg = document.querySelector(
+                    `.nxa-fullsize-bg[data-instance="${this._instanceId}"]`
+                ) as HTMLDivElement;
                 if (fullscreenImg && fullscreenBg) {
-                    fullscreenImg.style.transition = 'transform 0.3s ease-out';
+                    fullscreenImg.style.transition = "transform 0.3s ease-out";
                     fullscreenImg.src = activeImg.src;
                     fullscreenBg.style.backgroundImage = `url(${activeImg.src})`;
                     setTimeout(() => {
-                        fullscreenImg.style.transition = '';
+                        fullscreenImg.style.transition = "";
                     }, 300);
                 }
             }
         }
-    }
+    };
 
     /**
      * Handles previous slide navigation in fullscreen mode
@@ -1070,35 +1201,35 @@ export class NxaImage extends LitElement {
     private handleFullscreenPrev = () => {
         if (this.slidesShowConfig.enabled) {
             this.prevSlide();
-            const activeImg = this.querySelector("img.active") as HTMLImageElement;
+            const activeImg = this.querySelector(
+                "img.active"
+            ) as HTMLImageElement;
             if (activeImg) {
-                const fullscreenImg = document.querySelector(".nxa-fullsize-image") as HTMLImageElement;
-                const fullscreenBg = document.querySelector(".nxa-fullsize-bg") as HTMLDivElement;
+                const fullscreenImg = document.querySelector(
+                    `.nxa-fullsize-image[data-instance="${this._instanceId}"]`
+                ) as HTMLImageElement;
+                const fullscreenBg = document.querySelector(
+                    `.nxa-fullsize-bg[data-instance="${this._instanceId}"]`
+                ) as HTMLDivElement;
                 if (fullscreenImg && fullscreenBg) {
-                    fullscreenImg.style.transition = 'transform 0.3s ease-out';
+                    fullscreenImg.style.transition = "transform 0.3s ease-out";
                     fullscreenImg.src = activeImg.src;
                     fullscreenBg.style.backgroundImage = `url(${activeImg.src})`;
                     setTimeout(() => {
-                        fullscreenImg.style.transition = '';
+                        fullscreenImg.style.transition = "";
                     }, 300);
                 }
             }
         }
-    }
+    };
 
     /**
      * Handles window resize events to update mobile detection
      */
-    private handleResize() {
+    private handleResize = () => {
         // Update mobile device detection on resize
-        const wasMobile = this.isMobileDevice;
         this.isMobileDevice = detectMobileDevice();
-
-        // If mobile status changed, update the component
-        if (wasMobile !== this.isMobileDevice) {
-            this.requestUpdate();
-        }
-    }
+    };
 
     /**
      * Checks if the slideshow needs to be restarted due to rapid reconnection
@@ -1114,16 +1245,16 @@ export class NxaImage extends LitElement {
      * Prevents default drag behavior for images
      */
     private preventImageDrag() {
-        const images = Array.from(this.querySelectorAll('img'));
-        images.forEach(img => {
-            img.setAttribute('draggable', 'false');
-            img.addEventListener('dragstart', (e) => e.preventDefault());
+        const images = Array.from(this.querySelectorAll("img"));
+        images.forEach((img) => {
+            img.setAttribute("draggable", "false");
+            img.addEventListener("dragstart", (e) => e.preventDefault());
         });
     }
 }
 
 declare global {
     interface HTMLElementTagNameMap {
-        'nxa-image': NxaImage;
+        "nxa-image": NxaImage;
     }
 }

@@ -35,7 +35,8 @@ export default defineConfig({
     }
   },
     server: {
-      host: true
+      host: true,
+      open: '/test-dashboard.html'
     },
   esbuild: {
     target: 'esnext'

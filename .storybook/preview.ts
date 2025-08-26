@@ -1,4 +1,4 @@
-import type { Preview } from "@storybook/web-components";
+import type { Preview } from "@storybook/web-components-vite";
 import '../src/image/nxa-image';
 
 // Import your custom elements manifest if you have one
@@ -21,12 +21,15 @@ const preview: Preview = {
       },
     },
   },
+
   decorators: [
     (story) => {
       // Add any global decorators here
       return story();
     },
   ],
+
+  tags: ["autodocs"]
 };
 
 // If you have a custom elements manifest, uncomment this line

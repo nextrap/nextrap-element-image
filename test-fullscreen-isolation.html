@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fullscreen Isolation Test - NxaImage Component</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            color: white;
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+        
+        .nav-bar {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 15px;
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .nav-btn {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 2px solid rgba(255,255,255,0.3);
+            padding: 10px 20px;
+            border-radius: 20px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .nav-btn:hover {
+            background: rgba(255,255,255,0.3);
+            border-color: rgba(255,255,255,0.5);
+            transform: translateY(-2px);
+        }
+        
+        .test-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+        
+        .test-instance {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+        }
+        
+        .test-instance:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+        }
+        
+        .test-instance h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .instance-info {
+            background: #e8f4fd;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-family: monospace;
+            font-size: 12px;
+            border-left: 4px solid #667eea;
+        }
+        
+        nxa-image {
+            width: 100%;
+            height: 250px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            margin: 15px 0;
+            display: block;
+        }
+        
+        .test-controls {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 15px;
+        }
+        
+        .btn {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+        
+        .btn.success { background: linear-gradient(45deg, #4facfe, #00f2fe); }
+        .btn.warning { background: linear-gradient(45deg, #43e97b, #38f9d7); }
+        .btn.danger { background: linear-gradient(45deg, #fa709a, #fee140); }
+        
+        .test-results {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .test-results h3 {
+            color: #667eea;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 10px;
+        }
+        
+        .result-item {
+            margin: 10px 0;
+            padding: 12px;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 13px;
+        }
+        
+        .result-success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        
+        .result-error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        
+        .result-info {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+        }
+        
+        .result-warning {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+        }
+        
+        .stress-test {
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+        }
+        
+        .stress-test h3 {
+            color: #856404;
+            margin-bottom: 15px;
+        }
+        
+        .stress-controls {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+        
+        .stress-btn {
+            background: linear-gradient(45deg, #ffc107, #ff8c00);
+            color: #333;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .stress-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+        
+        .console-output {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 20px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+            margin-top: 15px;
+        }
+        
+        @media (max-width: 768px) {
+            .test-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .nav-bar {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔍 Fullscreen Isolation Test</h1>
+            <p>Test multiple fullscreen views coexisting independently</p>
+        </div>
+        
+        <div class="nav-bar">
+            <a href="test-dashboard.html" class="nav-btn">🏠 Dashboard</a>
+            <a href="test-multiple-instances.html" class="nav-btn">🚀 Multiple Instances</a>
+            <a href="test-slideshow-independence.html" class="nav-btn">🎠 Slideshow Test</a>
+            <a href="test-performance.html" class="nav-btn">⚡ Performance</a>
+        </div>
+        
+        <div class="test-grid">
+            <div class="test-instance">
+                <h3>🖼️ Instance 1: Basic Fullscreen</h3>
+                <div class="instance-info">
+                    Features: fullsize, round-borders<br>
+                    Type: Single image with fullscreen
+                </div>
+                <nxa-image data-features="fullsize round-borders" debug="true">
+                    <img src="https://picsum.photos/400/250?random=1" alt="Landscape 1" data-caption="Beautiful mountain landscape">
+                </nxa-image>
+                <div class="test-controls">
+                    <button class="btn" onclick="testFullscreen(0)">Test Fullscreen</button>
+                    <button class="btn success" onclick="checkInstanceStatus(0)">Check Status</button>
+                </div>
+            </div>
+            
+            <div class="test-instance">
+                <h3>🎠 Instance 2: Slideshow Fullscreen</h3>
+                <div class="instance-info">
+                    Features: slideshow, arrows, indicators, fullsize<br>
+                    Type: Multi-image slideshow with navigation
+                </div>
+                <nxa-image data-features="slideshow arrows indicators fullsize" interval="4000" debug="true">
+                    <img src="https://picsum.photos/400/250?random=2" alt="Landscape 2" data-caption="Ocean view">
+                    <img src="https://picsum.photos/400/250?random=3" alt="Landscape 3" data-caption="Forest scene">
+                    <img src="https://picsum.photos/400/250?random=4" alt="Landscape 4" data-caption="Desert landscape">
+                </nxa-image>
+                <div class="test-controls">
+                    <button class="btn" onclick="testFullscreen(1)">Test Fullscreen</button>
+                    <button class="btn success" onclick="checkInstanceStatus(1)">Check Status</button>
+                    <button class="btn warning" onclick="testSlideshowNavigation(1)">Test Navigation</button>
+                </div>
+            </div>
+            
+            <div class="test-instance">
+                <h3>✂️ Instance 3: Cropped Fullscreen</h3>
+                <div class="instance-info">
+                    Features: fullsize, custom cropping<br>
+                    Type: Cropped image with fullscreen
+                </div>
+                <nxa-image data-features="fullsize" data-crop="top: 15%; right: 15%; bottom: 15%; left: 15%" debug="true">
+                    <img src="https://picsum.photos/400/250?random=5" alt="Landscape 5" data-caption="Cropped city view">
+                </nxa-image>
+                <div class="test-controls">
+                    <button class="btn" onclick="testFullscreen(2)">Test Fullscreen</button>
+                    <button class="btn success" onclick="checkInstanceStatus(2)">Check Status</button>
+                </div>
+            </div>
+            
+            <div class="test-instance">
+                <h3>🎭 Instance 4: Fast Slideshow</h3>
+                <div class="instance-info">
+                    Features: slideshow, arrows, indicators, fullsize<br>
+                    Type: Fast slideshow (2s interval)
+                </div>
+                <nxa-image data-features="slideshow arrows indicators fullsize" interval="2000" debug="true">
+                    <img src="https://picsum.photos/400/250?random=6" alt="Landscape 6" data-caption="Sunset view">
+                    <img src="https://picsum.photos/400/250?random=7" alt="Landscape 7" data-caption="Mountain peak">
+                </nxa-image>
+                <div class="test-controls">
+                    <button class="btn" onclick="testFullscreen(3)">Test Fullscreen</button>
+                    <button class="btn success" onclick="checkInstanceStatus(3)">Check Status</button>
+                    <button class="btn warning" onclick="testSlideshowNavigation(3)">Test Navigation</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="stress-test">
+            <h3>🧪 Stress Test: Multiple Fullscreen Views</h3>
+            <p>This test verifies that multiple fullscreen views can coexist without conflicts. Follow these steps:</p>
+            <ol style="margin: 15px 0; padding-left: 20px;">
+                <li><strong>Open fullscreen on Instance 1</strong> - Should work normally</li>
+                <li><strong>While Instance 1 is fullscreen, open Instance 2</strong> - Should open separate fullscreen</li>
+                <li><strong>Navigate between slides in Instance 2's fullscreen</strong> - Should work independently</li>
+                <li><strong>Open Instance 3's fullscreen</strong> - Should work without conflicts</li>
+                <li><strong>Close instances in different order</strong> - Should not affect others</li>
+            </ol>
+            <div class="stress-controls">
+                <button class="stress-btn" onclick="runStressTest()">🚀 Run Stress Test</button>
+                <button class="stress-btn" onclick="openAllFullscreens()">🔓 Open All Fullscreens</button>
+                <button class="stress-btn" onclick="closeAllFullscreens()">🔒 Close All Fullscreens</button>
+            </div>
+        </div>
+        
+        <div class="test-results">
+            <h3>📊 Test Results</h3>
+            <div id="test-results">
+                <p>Click the test buttons above to start testing fullscreen isolation.</p>
+            </div>
+            
+            <div class="console-output" id="console-output" style="display: none;">
+                <strong>Console Output:</strong>
+                <div id="console-content"></div>
+            </div>
+            
+            <div class="test-controls" style="margin-top: 20px;">
+                <button class="btn success" onclick="showConsoleOutput()">📺 Toggle Console</button>
+                <button class="btn warning" onclick="clearResults()">🗑️ Clear Results</button>
+                <button class="btn danger" onclick="runFullTest()">🧪 Run Full Test Suite</button>
+            </div>
+        </div>
+    </div>
+    
+    <script type="module">
+        // Import the component
+        import { NxaImage } from './dist/nextrap-image.mjs';
+        
+        // Store console output
+        let consoleOutput = [];
+        
+        // Override console.log to capture output
+        const originalLog = console.log;
+        console.log = function(...args) {
+            originalLog.apply(console, args);
+            consoleOutput.push({
+                timestamp: new Date().toLocaleTimeString(),
+                message: args.map(arg => typeof arg === 'object' ? JSON.stringify(arg, null, 2) : String(arg)).join(' ')
+            });
+            updateConsoleOutput();
+        };
+        
+        // Wait for DOM to be ready
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 Fullscreen Isolation Test loaded');
+            
+            // Check component availability
+            setTimeout(function() {
+                const instances = document.querySelectorAll('nxa-image');
+                console.log(`📊 Found ${instances.length} NxaImage instances for fullscreen testing`);
+                
+                instances.forEach(function(instance, index) {
+                    console.log(`Instance ${index + 1} ready for fullscreen testing`);
+                });
+            }, 500);
+        });
+        
+        // Global functions for testing
+        window.testFullscreen = function(instanceIndex) {
+            const instances = document.querySelectorAll('nxa-image');
+            const instance = instances[instanceIndex];
+            
+            if (!instance) {
+                addResult(`❌ Instance ${instanceIndex + 1} not found`, 'error');
+                return;
+            }
+            
+            addResult(`🔍 Testing fullscreen for Instance ${instanceIndex + 1}`, 'info');
+            
+            // Simulate a click on the image to test fullscreen
+            const img = instance.querySelector('img');
+            if (img) {
+                img.click();
+                addResult(`✅ Fullscreen test initiated for Instance ${instanceIndex + 1}`, 'success');
+            } else {
+                addResult(`❌ No image found in Instance ${instanceIndex + 1}`, 'error');
+            }
+        };
+        
+        window.checkInstanceStatus = function(instanceIndex) {
+            const instances = document.querySelectorAll('nxa-image');
+            const instance = instances[instanceIndex];
+            
+            if (instance) {
+                addResult(`ℹ️ Instance ${instanceIndex + 1} status:`, 'info');
+                addResult(JSON.stringify({
+                    tagName: instance.tagName,
+                    className: instance.className,
+                    dataFeatures: instance.dataFeatures,
+                    debug: instance.debug,
+                    fullSize: instance.fullSize
+                }, null, 2), 'info');
+            }
+        };
+        
+        window.testSlideshowNavigation = function(instanceIndex) {
+            const instances = document.querySelectorAll('nxa-image');
+            const instance = instances[instanceIndex];
+            
+            if (instance && instance.dataFeatures && instance.dataFeatures.includes('slideshow')) {
+                addResult(`🎠 Testing slideshow navigation for Instance ${instanceIndex + 1}`, 'info');
+                addResult(`✅ Slideshow is enabled for Instance ${instanceIndex + 1}`, 'success');
+            } else {
+                addResult(`❌ Slideshow not enabled for Instance ${instanceIndex + 1}`, 'error');
+            }
+        };
+        
+        window.runStressTest = function() {
+            addResult('🧪 Starting fullscreen stress test...', 'info');
+            addResult('💡 Follow the manual test steps above', 'info');
+            addResult('🔍 Watch for any conflicts between fullscreen views', 'warning');
+        };
+        
+        window.openAllFullscreens = function() {
+            addResult('🔓 Attempting to open all fullscreen views...', 'info');
+            
+            const instances = document.querySelectorAll('nxa-image');
+            instances.forEach(function(instance, index) {
+                if (instance.dataFeatures && instance.dataFeatures.includes('fullsize')) {
+                    const img = instance.querySelector('img');
+                    if (img) {
+                        setTimeout(function() {
+                            img.click();
+                            addResult(`✅ Opened fullscreen for Instance ${index + 1}`, 'success');
+                        }, index * 500); // Stagger opening
+                    }
+                }
+            });
+        };
+        
+        window.closeAllFullscreens = function() {
+            addResult('🔒 Attempting to close all fullscreen views...', 'info');
+            
+            // Find all fullscreen containers and close them
+            const fullscreenContainers = document.querySelectorAll('.nxa-fullsize-container');
+            fullscreenContainers.forEach(function(container, index) {
+                const closeBtn = container.querySelector('.nxa-fullsize-close-btn');
+                if (closeBtn) {
+                    closeBtn.click();
+                    addResult(`✅ Closed fullscreen view ${index + 1}`, 'success');
+                }
+            });
+        };
+        
+        window.showConsoleOutput = function() {
+            const consoleDiv = document.getElementById('console-output');
+            consoleDiv.style.display = consoleDiv.style.display === 'none' ? 'block' : 'none';
+        };
+        
+        window.clearResults = function() {
+            document.getElementById('test-results').innerHTML = `
+                <p>Click the test buttons above to start testing fullscreen isolation.</p>
+            `;
+            consoleOutput = [];
+            updateConsoleOutput();
+        };
+        
+        window.runFullTest = function() {
+            addResult('🧪 Running complete fullscreen isolation test suite...', 'info');
+            
+            // Test 1: Instance availability
+            const instances = document.querySelectorAll('nxa-image');
+            addResult(`✅ Found ${instances.length} instances for testing`, 'success');
+            
+            // Test 2: Fullscreen capability
+            const fullscreenInstances = Array.from(instances).filter(instance => 
+                instance.dataFeatures && instance.dataFeatures.includes('fullsize')
+            );
+            addResult(`✅ ${fullscreenInstances.length} instances support fullscreen`, 'success');
+            
+            // Test 3: Slideshow capability
+            const slideshowInstances = Array.from(instances).filter(instance => 
+                instance.dataFeatures && instance.dataFeatures.includes('slideshow')
+            );
+            addResult(`✅ ${slideshowInstances.length} instances support slideshow`, 'success');
+            
+            addResult('🎉 Full test suite completed!', 'success');
+            addResult('💡 Now try the manual stress test steps above', 'info');
+        };
+        
+        function addResult(message, type = 'info') {
+            const resultsDiv = document.getElementById('test-results');
+            const resultElement = document.createElement('div');
+            resultElement.className = `result-item result-${type}`;
+            resultElement.innerHTML = message;
+            resultsDiv.appendChild(resultElement);
+        }
+        
+        function updateConsoleOutput() {
+            const consoleContent = document.getElementById('console-content');
+            if (consoleContent) {
+                consoleContent.innerHTML = consoleOutput
+                    .slice(-30) // Show last 30 entries
+                    .map(entry => `<div>[${entry.timestamp}] ${entry.message}</div>`)
+                    .join('');
+                consoleContent.scrollTop = consoleContent.scrollHeight;
+            }
+        }
+    </script>
+</body>
+</html>

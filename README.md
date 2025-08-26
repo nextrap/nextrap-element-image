@@ -7,12 +7,32 @@ A versatile and powerful image component for modern web applications that provid
 - 🖼️ **Flexible Image Positioning**: Control image position (top, bottom, left, right, center) using `object-position`
 - 📐 **Responsive Aspect Ratio**: Maintain aspect ratios across different breakpoints
 - 🎭 **Slideshow Capabilities**:
-  - Smooth blend effects between slides
+  - Smooth blend effects between slides *(blend effect: not yet implemented)*
   - Left/right navigation
   - Caption support using alt text or data-caption
 - 🔍 **Fullsize View**: Display images in a modal with centered positioning and blurred background
-- ✂️ **Image Cropping**: Virtual crop functionality with percentage-based dimensions
+- ✂️ **Image Cropping**: Virtual crop functionality with percentage-based or pixel dimensions
 - 📱 **Touch Support**: Swipe detection for mobile-friendly navigation
+- 🐞 **Debug Mode**: Enable detailed console logging for troubleshooting (`debug` attribute)
+
+## Supported Attributes
+
+- `data-features`: Space-separated list of features to enable. Supported values:
+  - `slideshow`, `fullsize`, `arrows`, `indicators`, `round-borders`, `blend` *(not yet implemented)*, `dont-pause-on-hover`
+- `data-crop`: Global crop settings for all images (can be overridden per image)
+- `interval`: Custom interval for slideshow transitions (ms)
+- `debug`: Enables debug mode (boolean)
+
+## CSS Customization
+
+- CSS Parts: `image-container`, `caption-container`, `indicators`, `navigation-arrows`
+- CSS Properties: `--nxa-image-border-radius` (default: 12px)
+
+## Custom Events
+
+- `nxa-image-fullsize-open`: Fired when fullsize view is opened
+- `nxa-image-fullsize-close`: Fired when fullsize view is closed
+- `nxa-image-slide-change`: Fired when the active slide changes
 
 ## Installation
 
@@ -190,13 +210,13 @@ The main component that handles all image functionality.
 - `style`: Standard CSS styling (width, height required)
 - `data-features`: Space-separated list of features to enable:
   - `slideshow`: Enables slideshow functionality
-  - `blend`: Adds blend effect between slides
   - `fullsize`: Enables fullscreen modal view
   - `arrows`: Shows navigation arrows
   - `indicators`: Shows slide indicators
   - `round-borders`: Applies rounded corners
   - `dont-pause-on-hover`: Prevents slideshow from pausing on hover
 - `interval`: Custom interval for slideshow transitions (in milliseconds)
+- `debug`: Enables debug mode (boolean)
 
 #### Event Callbacks
 
@@ -253,11 +273,8 @@ src/
    ```bash
    npm run dev
    ```
-4. View Storybook documentation:
-   ```bash
-   apt install xdg-open
-   npm run storybook
-   ```
+4. Live:
+   http://localhost:5173/test-dashboard.html
 5. Run tests:
    ```bash
    npm test
@@ -269,7 +286,7 @@ This project is licensed under the terms specified in the [LICENSE.txt](LICENSE.
 
 ## Release Notes
 
-For detailed information about changes in each version, please refer to the [RELEASE_NOTES.md](RELEASE_NOTES.md) file.
+For detailed information about changes in each version, please take a look at the [RELEASE_NOTES.md](RELEASE_NOTES.md) file.
 
 ## Contributing
 

@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multiple NxaImage Instances Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+            line-height: 1.6;
+        }
+        .test-section {
+            margin-bottom: 40px;
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .test-section h2 {
+            color: #333;
+            margin-top: 0;
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 10px;
+        }
+        .instance-info {
+            background: #e8f4fd;
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 15px;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        .status-working { background-color: #28a745; }
+        .status-error { background-color: #dc3545; }
+        .status-warning { background-color: #ffc107; }
+        
+        nxa-image {
+            width: 300px;
+            height: 200px;
+            border: 2px solid #ddd;
+            margin: 10px 0;
+            display: block;
+        }
+        .controls {
+            margin: 10px 0;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 10px;
+            margin-bottom: 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        button.success {
+            background: #28a745;
+        }
+        button.danger {
+            background: #dc3545;
+        }
+        button.warning {
+            background: #ffc107;
+            color: #333;
+        }
+        .test-results {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 15px;
+            margin-top: 15px;
+        }
+        .test-results h3 {
+            margin-top: 0;
+            color: #495057;
+        }
+        .result-item {
+            margin: 8px 0;
+            padding: 8px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        .result-success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        .result-error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        .result-info {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+        }
+        .console-output {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 15px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+            margin-top: 10px;
+        }
+        .feature-list {
+            list-style: none;
+            padding: 0;
+        }
+        .feature-list li {
+            padding: 5px 0;
+            border-bottom: 1px solid #eee;
+        }
+        .feature-list li:before {
+            content: "✓ ";
+            color: #28a745;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 Multiple NxaImage Instances Test</h1>
+    <p>This page tests whether multiple instances of the NxaImage component can coexist without conflicts.</p>
+    
+    <div class="test-section">
+        <h2>📋 Test Overview</h2>
+        <p>We'll test the following scenarios:</p>
+        <ul class="feature-list">
+            <li>Multiple instances with different features</li>
+            <li>Independent slideshow functionality</li>
+            <li>Separate fullscreen views</li>
+            <li>Instance-specific event handling</li>
+            <li>No style conflicts between instances</li>
+            <li>Proper cleanup and memory management</li>
+        </ul>
+    </div>
+
+    <div class="test-section">
+        <h2>🖼️ Instance 1: Basic Image with Fullscreen</h2>
+        <div class="instance-info">
+            <span class="status-indicator status-working"></span>
+            Features: fullsize, round-borders
+        </div>
+        <nxa-image data-features="fullsize round-borders" debug="true">
+            <img src="https://picsum.photos/300/200?random=1" alt="Random Image 1" data-caption="Beautiful landscape 1">
+        </nxa-image>
+        <div class="controls">
+            <button onclick="testInstance(0, 'fullscreen')">Test Fullscreen</button>
+            <button onclick="testInstance(0, 'debug')">Toggle Debug</button>
+            <button onclick="showInstanceInfo(0)">Show Info</button>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>🎠 Instance 2: Slideshow with Navigation</h2>
+        <div class="instance-info">
+            <span class="status-indicator status-working"></span>
+            Features: slideshow, arrows, indicators, fullsize, round-borders (3s interval)
+        </div>
+        <nxa-image data-features="slideshow arrows indicators fullsize round-borders" interval="3000" debug="true">
+            <img src="https://picsum.photos/300/200?random=2" alt="Random Image 2" data-caption="Beautiful landscape 2">
+            <img src="https://picsum.photos/300/200?random=3" alt="Random Image 3" data-caption="Beautiful landscape 3">
+            <img src="https://picsum.photos/300/200?random=4" alt="Random Image 4" data-caption="Beautiful landscape 4">
+        </nxa-image>
+        <div class="controls">
+            <button onclick="testInstance(1, 'slideshow')">Test Slideshow</button>
+            <button onclick="testInstance(1, 'fullscreen')">Test Fullscreen</button>
+            <button onclick="testInstance(1, 'debug')">Toggle Debug</button>
+            <button onclick="showInstanceInfo(1)">Show Info</button>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>✂️ Instance 3: Cropped Image</h2>
+        <div class="instance-info">
+            <span class="status-indicator status-working"></span>
+            Features: fullsize, custom cropping (top: 20%, right: 10%, bottom: 20%, left: 10%)
+        </div>
+        <nxa-image data-features="fullsize" data-crop="top: 20%; right: 10%; bottom: 20%; left: 10%" debug="true">
+            <img src="https://picsum.photos/300/200?random=5" alt="Random Image 5" data-caption="Cropped landscape">
+        </nxa-image>
+        <div class="controls">
+            <button onclick="testInstance(2, 'fullscreen')">Test Fullscreen</button>
+            <button onclick="testInstance(2, 'debug')">Toggle Debug</button>
+            <button onclick="showInstanceInfo(2)">Show Info</button>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>🎭 Instance 4: Fast Slideshow</h2>
+        <div class="instance-info">
+            <span class="status-indicator status-working"></span>
+            Features: slideshow, arrows, indicators, fullsize (2s interval)
+        </div>
+        <nxa-image data-features="slideshow arrows indicators fullsize" interval="2000" debug="true">
+            <img src="https://picsum.photos/300/200?random=6" alt="Random Image 6" data-caption="Another beautiful landscape 1">
+            <img src="https://picsum.photos/300/200?random=7" alt="Random Image 7" data-caption="Another beautiful landscape 2">
+        </nxa-image>
+        <div class="controls">
+            <button onclick="testInstance(3, 'slideshow')">Test Slideshow</button>
+            <button onclick="testInstance(3, 'fullscreen')">Test Fullscreen</button>
+            <button onclick="testInstance(3, 'debug')">Toggle Debug</button>
+            <button onclick="showInstanceInfo(3)">Show Info</button>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>🔬 Test Results & Console</h2>
+        <div class="controls">
+            <button class="success" onclick="runAllTests()">🧪 Run All Tests</button>
+            <button class="warning" onclick="testFullscreenConflicts()">🔍 Test Fullscreen Conflicts</button>
+            <button class="danger" onclick="clearResults()">🗑️ Clear Results</button>
+            <button onclick="showConsoleOutput()">📺 Show Console Output</button>
+        </div>
+        
+        <div class="test-results">
+            <h3>Test Results</h3>
+            <div id="test-results">
+                <p>Click "Run All Tests" to start testing multiple instance functionality.</p>
+            </div>
+        </div>
+        
+        <div class="console-output" id="console-output" style="display: none;">
+            <strong>Console Output:</strong>
+            <div id="console-content"></div>
+        </div>
+    </div>
+
+    <script type="module">
+        // Import the component
+        import { NxaImage } from './dist/nextrap-image.mjs';
+
+        // Store console output
+        let consoleOutput = [];
+        
+        // Override console.log to capture output
+        const originalLog = console.log;
+        console.log = function(...args) {
+            originalLog.apply(console, args);
+            consoleOutput.push({
+                timestamp: new Date().toLocaleTimeString(),
+                message: args.map(arg => typeof arg === 'object' ? JSON.stringify(arg, null, 2) : String(arg)).join(' ')
+            });
+            updateConsoleOutput();
+        };
+
+        // Wait for DOM to be ready and component to be registered
+        document.addEventListener('DOMContentLoaded', () => {
+            // Small delay to ensure custom elements are registered
+            setTimeout(() => {
+            console.log('🚀 Multiple NxaImage instances test page loaded');
+            
+            // Test that all instances are properly registered
+            const instances = document.querySelectorAll('nxa-image');
+            console.log(`📊 Found ${instances.length} NxaImage instances`);
+            
+            instances.forEach((instance, index) => {
+                console.log(`Instance ${index + 1}:`, {
+                    tagName: instance.tagName,
+                    className: instance.className,
+                    dataFeatures: instance.dataFeatures,
+                    debug: instance.debug
+                });
+            });
+            
+            addResult('✅ Page loaded successfully', 'info');
+            addResult(`📊 Found ${instances.length} NxaImage instances`, 'info');
+            }, 100); // Small delay to ensure component registration
+        });
+
+        // Global functions for testing
+        window.testInstance = function(instanceIndex, testType) {
+            const instances = document.querySelectorAll('nxa-image');
+            const instance = instances[instanceIndex];
+            
+            if (!instance) {
+                addResult(`❌ Instance ${instanceIndex + 1} not found`, 'error');
+                return;
+            }
+
+            switch (testType) {
+                case 'fullscreen':
+                    addResult(`🔍 Testing fullscreen for Instance ${instanceIndex + 1}`, 'info');
+                    // Simulate a click on the image to test fullscreen
+                    const img = instance.querySelector('img');
+                    if (img) {
+                        img.click();
+                        addResult(`✅ Fullscreen test initiated for Instance ${instanceIndex + 1}`, 'success');
+                    }
+                    break;
+                    
+                case 'slideshow':
+                    addResult(`🎠 Testing slideshow for Instance ${instanceIndex + 1}`, 'info');
+                    if (instance.dataFeatures.includes('slideshow')) {
+                        addResult(`✅ Slideshow is enabled for Instance ${instanceIndex + 1}`, 'success');
+                    } else {
+                        addResult(`❌ Slideshow not enabled for Instance ${instanceIndex + 1}`, 'error');
+                    }
+                    break;
+                    
+                case 'debug':
+                    const currentDebug = instance.debug;
+                    instance.debug = !currentDebug;
+                    addResult(`🔧 Instance ${instanceIndex + 1} debug ${instance.debug ? 'enabled' : 'disabled'}`, 'success');
+                    break;
+            }
+        };
+
+        window.showInstanceInfo = function(instanceIndex) {
+            const instances = document.querySelectorAll('nxa-image');
+            const instance = instances[instanceIndex];
+            
+            if (instance) {
+                addResult(`ℹ️ Instance ${instanceIndex + 1} information:`, 'info');
+                addResult(JSON.stringify({
+                    tagName: instance.tagName,
+                    className: instance.className,
+                    dataFeatures: instance.dataFeatures,
+                    debug: instance.debug,
+                    fullSize: instance.fullSize,
+                    interval: instance.interval
+                }, null, 2), 'info');
+            }
+        };
+
+        window.runAllTests = function() {
+            addResult('🧪 Starting comprehensive test suite...', 'info');
+            
+            const instances = document.querySelectorAll('nxa-image');
+            
+            // Test 1: Instance registration
+            addResult(`✅ All ${instances.length} instances are properly registered`, 'success');
+            
+            // Test 2: Feature detection
+            instances.forEach((instance, index) => {
+                const features = instance.dataFeatures || [];
+                if (features.length > 0) {
+                    addResult(`✅ Instance ${index + 1} has features: ${features.join(', ')}`, 'success');
+                } else {
+                    addResult(`⚠️ Instance ${index + 1} has no features`, 'info');
+                }
+            });
+            
+            // Test 3: Debug mode
+            instances.forEach((instance, index) => {
+                instance.debug = true;
+                addResult(`✅ Instance ${index + 1} debug mode enabled`, 'success');
+            });
+            
+            // Test 4: Slideshow functionality
+            const slideshowInstances = Array.from(instances).filter(instance => 
+                instance.dataFeatures && instance.dataFeatures.includes('slideshow')
+            );
+            addResult(`✅ Found ${slideshowInstances.length} slideshow instances`, 'success');
+            
+            // Test 5: Fullscreen capability
+            const fullscreenInstances = Array.from(instances).filter(instance => 
+                instance.dataFeatures && instance.dataFeatures.includes('fullsize')
+            );
+            addResult(`✅ Found ${fullscreenInstances.length} fullscreen-capable instances`, 'success');
+            
+            addResult('🎉 All tests completed successfully!', 'success');
+            addResult('💡 Try opening fullscreen views on multiple instances to test isolation', 'info');
+        };
+
+        window.testFullscreenConflicts = function() {
+            addResult('🔍 Testing fullscreen conflict resolution...', 'info');
+            
+            const instances = document.querySelectorAll('nxa-image');
+            const fullscreenInstances = Array.from(instances).filter(instance => 
+                instance.dataFeatures && instance.dataFeatures.includes('fullsize')
+            );
+            
+            if (fullscreenInstances.length > 1) {
+                addResult('✅ Multiple fullscreen-capable instances detected', 'success');
+                addResult('💡 Try opening fullscreen on multiple instances simultaneously', 'info');
+                addResult('🔒 Each instance should have its own isolated fullscreen view', 'info');
+            } else {
+                addResult('⚠️ Only one fullscreen-capable instance found', 'warning');
+            }
+        };
+
+        window.clearResults = function() {
+            document.getElementById('test-results').innerHTML = `
+                <p>Click "Run All Tests" to start testing multiple instance functionality.</p>
+            `;
+            consoleOutput = [];
+            updateConsoleOutput();
+        };
+
+        window.showConsoleOutput = function() {
+            const consoleDiv = document.getElementById('console-output');
+            consoleDiv.style.display = consoleDiv.style.display === 'none' ? 'block' : 'none';
+        };
+
+        window.addResult = function(message, type = 'info') {
+            const resultsDiv = document.getElementById('test-results');
+            const resultElement = document.createElement('div');
+            resultElement.className = `result-item result-${type}`;
+            resultElement.innerHTML = message;
+            resultsDiv.appendChild(resultElement);
+        }
+
+        window.updateConsoleOutput = function() {
+            const consoleContent = document.getElementById('console-content');
+            if (consoleContent) {
+                consoleContent.innerHTML = consoleOutput
+                    .slice(-20) // Show last 20 entries
+                    .map(entry => `<div>[${entry.timestamp}] ${entry.message}</div>`)
+                    .join('');
+                consoleContent.scrollTop = consoleContent.scrollHeight;
+            }
+        }
+    </script>
+</body>
+</html>

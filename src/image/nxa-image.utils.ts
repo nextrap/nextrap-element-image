@@ -307,8 +307,12 @@ interface TouchState {
  * @param img The image to display in fullsize
  * @param isMobileDevice Whether the current device is mobile
  */
-export const createFullsizeView = (img: HTMLImageElement, isMobileDevice: boolean, onClose?: () => void, onNext?: () => void, onPrev?: () => void): void => {
-    // Check if fullscreen view already exists
+export const createFullsizeView = (img: HTMLImageElement, isMobileDevice: boolean, onClose?: () => void, onNext?: () => void, onPrev?: () => void, instanceId?: string): void => {
+    // Check if fullscreen view already exists for this instance
+    if (instanceId && document.querySelector(`.nxa-fullsize-container[data-instance="${instanceId}"]`)) {
+        return;
+    }
+    // Also check for any existing fullscreen view (fallback for backward compatibility)
     if (document.querySelector('.nxa-fullsize-container')) {
         return;
     }
@@ -332,11 +336,24 @@ export const createFullsizeView = (img: HTMLImageElement, isMobileDevice: boolea
     fullSizeImg.src = img.src;
     fullSizeImg.className = "nxa-fullsize-image";
 
+    // Add instance ID to elements if provided
+    if (instanceId) {
+        container.setAttribute("data-instance", instanceId);
+        darkOverlay.setAttribute("data-instance", instanceId);
+        blurredBg.setAttribute("data-instance", instanceId);
+        fullSizeImg.setAttribute("data-instance", instanceId);
+    }
+
     // Create close button
     const closeBtn = document.createElement("button");
     closeBtn.className = "nxa-fullsize-close-btn";
     closeBtn.innerHTML = "×";
     closeBtn.style.display = isMobileDevice ? 'flex' : 'none';
+
+    // Add instance ID to close button if provided
+    if (instanceId) {
+        closeBtn.setAttribute("data-instance", instanceId);
+    }
 
     // Add elements to container
     container.appendChild(darkOverlay);
@@ -405,6 +422,12 @@ export const createFullsizeView = (img: HTMLImageElement, isMobileDevice: boolea
                 }
             });
 
+            // Add instance ID to navigation buttons if provided
+            if (instanceId) {
+                prevBtn.setAttribute("data-instance", instanceId);
+                nextBtn.setAttribute("data-instance", instanceId);
+            }
+
             container.appendChild(prevBtn);
             container.appendChild(nextBtn);
         }
@@ -428,7 +451,10 @@ export const createFullsizeView = (img: HTMLImageElement, isMobileDevice: boolea
         // Wait for animation to complete before removing
         setTimeout(() => {
             container.remove();
-            document.getElementById('nxa-fullsize-styles')?.remove();
+            // Only remove styles if this is the last fullscreen view
+            if (!document.querySelector('.nxa-fullsize-container')) {
+                document.getElementById('nxa-fullsize-styles')?.remove();
+            }
             // Call onClose after everything is cleaned up
             onClose?.();
         }, TRANSITION_DURATION);
