@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NxaImage Test Environment</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            color: white;
+        }
+        
+        .header h1 {
+            font-size: 3rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+        
+        .section {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        
+        .section h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 2rem;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 10px;
+        }
+        
+        .section h3 {
+            color: #764ba2;
+            margin: 30px 0 15px 0;
+            font-size: 1.5rem;
+        }
+        
+        .example {
+            margin-bottom: 40px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border-left: 5px solid #667eea;
+        }
+        
+        .example h4 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 1.2rem;
+        }
+        
+        .example p {
+            color: #666;
+            margin-bottom: 15px;
+            line-height: 1.6;
+        }
+        
+        .image-container {
+            margin: 20px 0;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        
+        .image-wrapper {
+            flex: 1;
+            min-width: 300px;
+        }
+        
+        .code-block {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            margin: 10px 0;
+            overflow-x: auto;
+        }
+        
+        .nav-bar {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-bottom: 30px;
+        }
+        
+        .nav-btn {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 2px solid rgba(255,255,255,0.3);
+            padding: 12px 24px;
+            border-radius: 25px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+        
+        .nav-btn:hover {
+            background: rgba(255,255,255,0.3);
+            border-color: rgba(255,255,255,0.5);
+            transform: translateY(-2px);
+        }
+        
+        .event-log {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+            margin: 15px 0;
+        }
+        
+        .controls {
+            margin: 15px 0;
+        }
+        
+        .btn {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: 600;
+            margin-right: 10px;
+            margin-bottom: 10px;
+            transition: all 0.3s ease;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+        
+        @media (max-width: 768px) {
+            .image-container {
+                flex-direction: column;
+            }
+            
+            .image-wrapper {
+                min-width: auto;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .nav-bar {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🖼️ NxaImage Test Environment</h1>
+            <p>Comprehensive examples based on README documentation</p>
+        </div>
+        
+        <div class="nav-bar">
+            <a href="test-dashboard.html" class="nav-btn">🏠 Test Dashboard</a>
+            <a href="test-multiple-instances.html" class="nav-btn">🚀 Multiple Instances</a>
+            <a href="test-fullscreen-isolation.html" class="nav-btn">🔍 Fullscreen Test</a>
+            <a href="test-performance.html" class="nav-btn">⚡ Performance</a>
+        </div>
+
+        <!-- Basic Examples Section -->
+        <div class="section">
+            <h2>🎯 Basic Examples</h2>
+            
+            <div class="example">
+                <h4>Basic Image with Fullsize Capability</h4>
+                <p>Click on the image to open it in fullscreen mode.</p>
+                <div class="code-block">&lt;nxa-image style="width: 600px; height: 400px;" data-features="fullsize"&gt;
+    &lt;img src="https://picsum.photos/600/400?random=1" alt="Sample image"&gt;
+&lt;/nxa-image&gt;</div>
+                <div class="image-container">
+                    <nxa-image style="width: 600px; height: 400px;" data-features="fullsize">
+                        <img src="https://picsum.photos/600/400?random=1" alt="Sample image">
+                    </nxa-image>
+                </div>
+            </div>
+            
+            <div class="example">
+                <h4>Image with Rounded Borders</h4>
+                <p>Image with rounded corners applied via CSS.</p>
+                <div class="code-block">&lt;nxa-image style="width: 600px; height: 400px;" data-features="round-borders"&gt;
+    &lt;img src="https://picsum.photos/600/400?random=2" alt="Sample image with rounded borders"&gt;
+&lt;/nxa-image&gt;</div>
+                <div class="image-container">
+                    <nxa-image style="width: 600px; height: 400px;" data-features="round-borders">
+                        <img src="https://picsum.photos/600/400?random=2" alt="Sample image with rounded borders">
+                    </nxa-image>
+                </div>
+            </div>
+        </div>
+
+        <!-- Image Cropping Section -->
+        <div class="section">
+            <h2>✂️ Image Cropping</h2>
+            
+            <div class="example">
+                <h4>Percentage-based Cropping</h4>
+                <p>Crop 10% from each side using percentage values.</p>
+                <div class="code-block">&lt;nxa-image style="width: 300px; height: 300px"&gt;
+    &lt;img src="https://picsum.photos/400/400?random=3" 
+         data-crop="top: 10%; bottom: 10%; right: 10%; left: 10%" 
+         alt="Cropped image"&gt;
+&lt;/nxa-image&gt;</div>
+                <div class="image-container">
+                    <nxa-image style="width: 300px; height: 300px">
+                        <img src="https://picsum.photos/400/400?random=3" 
+                             data-crop="top: 10%; bottom: 10%; right: 10%; left: 10%" 
+                             alt="Cropped image">
+                    </nxa-image>
+                </div>
+            </div>
+            
+            <div class="example">
+                <h4>Pixel-based Cropping</h4>
+                <p>Crop 50 pixels from each side using pixel values.</p>
+                <div class="code-block">&lt;nxa-image style="width: 300px; height: 300px"&gt;
+    &lt;img src="https://picsum.photos/400/400?random=4" 
+         data-crop="top: 50px; bottom: 50px; right: 50px; left: 50px" 
+         alt="Cropped image"&gt;
+&lt;/nxa-image&gt;</div>
+                <div class="image-container">
+                    <nxa-image style="width: 300px; height: 300px">
+                        <img src="https://picsum.photos/400/400?random=4" 
+                             data-crop="top: 50px; bottom: 50px; right: 50px; left: 50px" 
+                             alt="Cropped image">
+                    </nxa-image>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slideshow Examples Section -->
+        <div class="section">
+            <h2>🎠 Slideshow Examples</h2>
+            
+            <div class="example">
+                <h4>Basic Slideshow</h4>
+                <p>Simple slideshow with automatic transitions.</p>
+                <div class="code-block">&lt;nxa-image style="width: 100%; height: 400px" data-features="slideshow"&gt;
+    &lt;img src="https://picsum.photos/800/400?random=5" alt="Slide 1"&gt;
+    &lt;img src="https://picsum.photos/800/400?random=6" alt="Slide 2"&gt;
+    &lt;img src="https://picsum.photos/800/400?random=7" alt="Slide 3"&gt;
+&lt;/nxa-image&gt;</div>
+                <div class="image-container">
+                    <nxa-image style="width: 100%; height: 400px" data-features="slideshow">
+                        <img src="https://picsum.photos/800/400?random=5" alt="Slide 1">
+                        <img src="https://picsum.photos/800/400?random=6" alt="Slide 2">
+                        <img src="https://picsum.photos/800/400?random=7" alt="Slide 3">
+                    </nxa-image>
+                </div>
+            </div>
+            
+            <div class="example">
+                <h4>Slideshow with Navigation and Indicators</h4>
+                <p>Slideshow with arrow navigation and slide indicators.</p>
+                <div class="code-block">&lt;nxa-image style="width: 100%; height: 400px" 
+           data-features="slideshow arrows indicators"&gt;
+    &lt;img src="https://picsum.photos/800/400?random=8" alt="Slide 1"&gt;
+    &lt;img src="https://picsum.photos/800/400?random=9" alt="Slide 2"&gt;
+    &lt;img src="https://picsum.photos/800/400?random=10" alt="Slide 3"&gt;
+&lt;/nxa-image&gt;</div>
+                <div class="image-container">
+                    <nxa-image style="width: 100%; height: 400px" 
+                               data-features="slideshow arrows indicators">
+                        <img src="https://picsum.photos/800/400?random=8" alt="Slide 1">
+                        <img src="https://picsum.photos/800/400?random=9" alt="Slide 2">
+                        <img src="https://picsum.photos/800/400?random=10" alt="Slide 3">
+                    </nxa-image>
+                </div>
+            </div>
+            
+            <div class="example">
+                <h4>Slideshow with Captions</h4>
+                <p>Slideshow with custom captions for each slide.</p>
+                <div class="code-block">&lt;nxa-image style="width: 100%; height: 400px" 
+           data-features="slideshow arrows indicators"&gt;
+    &lt;img src="https://picsum.photos/800/400?random=11" 
+         data-caption="Beautiful mountain landscape" 
+         alt="Mountain landscape"&gt;
+    &lt;img src="https://picsum.photos/800/400?random=12" 
+         data-caption="Serene ocean view" 
+         alt="Ocean view"&gt;
+    &lt;img src="https://picsum.photos/800/400?random=13" 
+         data-caption="Urban cityscape" 
+         alt="Cityscape"&gt;
+&lt;/nxa-image&gt;</div>
+                <div class="image-container">
+                    <nxa-image style="width: 100%; height: 400px" 
+                               data-features="slideshow arrows indicators">
+                        <img src="https://picsum.photos/800/400?random=11" 
+                             data-caption="Beautiful mountain landscape" 
+                             alt="Mountain landscape">
+                        <img src="https://picsum.photos/800/400?random=12" 
+                             data-caption="Serene ocean view" 
+                             alt="Ocean view">
+                        <img src="https://picsum.photos/800/400?random=13" 
+                             data-caption="Urban cityscape" 
+                             alt="Cityscape">
+                    </nxa-image>
+                </div>
+            </div>
+            
+            <div class="example">
+                <h4>Custom Slideshow Settings</h4>
+                <p>Slideshow with custom 2-second interval and continuous playback.</p>
+                <div class="code-block">&lt;nxa-image style="width: 100%; height: 400px" 
+           data-features="slideshow arrows indicators dont-pause-on-hover" 
+           interval="2000"&gt;
+    &lt;img src="https://picsum.photos/800/400?random=14" alt="Slide 1"&gt;
+    &lt;img src="https://picsum.photos/800/400?random=15" alt="Slide 2"&gt;
+    &lt;img src="https://picsum.photos/800/400?random=16" alt="Slide 3"&gt;
+&lt;/nxa-image&gt;</div>
+                <div class="image-container">
+                    <nxa-image style="width: 100%; height: 400px" 
+                               data-features="slideshow arrows indicators dont-pause-on-hover" 
+                               interval="2000">
+                        <img src="https://picsum.photos/800/400?random=14" alt="Slide 1">
+                        <img src="https://picsum.photos/800/400?random=15" alt="Slide 2">
+                        <img src="https://picsum.photos/800/400?random=16" alt="Slide 3">
+                    </nxa-image>
+                </div>
+            </div>
+        </div>
+
+        <!-- Complete Example Section -->
+        <div class="section">
+            <h2>🌟 Complete Example with All Features</h2>
+            
+            <div class="example">
+                <h4>Full-Featured Image Component</h4>
+                <p>Slideshow with all available features enabled including fullsize, rounded borders, and custom positioning.</p>
+                <div class="code-block">&lt;nxa-image style="width: 100%; height: 500px"
+           data-features="slideshow fullsize arrows indicators round-borders"
+           interval="4000"&gt;
+    &lt;img src="https://picsum.photos/800/500?random=17"
+         style="object-position: center center;"
+         data-caption="Beautiful mountain landscape"
+         alt="Mountain landscape"&gt;
+    &lt;img src="https://picsum.photos/800/500?random=18"
+         style="object-position: center center;"
+         data-caption="Serene ocean view"
+         alt="Ocean view"&gt;
+    &lt;img src="https://picsum.photos/800/500?random=19"
+         style="object-position: center center;"
+         alt="Cityscape"&gt;
+&lt;/nxa-image&gt;</div>
+                <div class="image-container">
+                    <nxa-image style="width: 100%; height: 500px"
+                               data-features="slideshow fullsize arrows indicators round-borders"
+                               interval="4000">
+                        <img src="https://picsum.photos/800/500?random=17"
+                             style="object-position: center center;"
+                             data-caption="Beautiful mountain landscape"
+                             alt="Mountain landscape">
+                        <img src="https://picsum.photos/800/500?random=18"
+                             style="object-position: center center;"
+                             data-caption="Serene ocean view"
+                             alt="Ocean view">
+                        <img src="https://picsum.photos/800/500?random=19"
+                             style="object-position: center center;"
+                             alt="Cityscape">
+                    </nxa-image>
+                </div>
+            </div>
+        </div>
+
+        <!-- Event Callbacks Section -->
+        <div class="section">
+            <h2>🔧 Event Callbacks Example</h2>
+            
+            <div class="example">
+                <h4>Interactive Component with Event Logging</h4>
+                <p>This example demonstrates all available event callbacks. Check the console and the log below for events.</p>
+                <div class="code-block">// JavaScript event handling
+const imageComponent = document.getElementById('eventExample');
+
+imageComponent.onSlideChange = (index, image) => {
+    console.log(`Slide changed to index ${index}`);
+};
+
+imageComponent.onFullscreenEnter = (image) => {
+    console.log('Entered fullscreen mode');
+};
+
+imageComponent.onFullscreenExit = (image) => {
+    console.log('Exited fullscreen mode');
+};
+
+// ... more event handlers</div>
+                
+                <div class="controls">
+                    <button class="btn" onclick="clearEventLog()">Clear Log</button>
+                    <button class="btn" onclick="triggerSlideChange()">Next Slide</button>
+                    <button class="btn" onclick="pauseSlideshow()">Pause Slideshow</button>
+                    <button class="btn" onclick="resumeSlideshow()">Resume Slideshow</button>
+                </div>
+                
+                <div class="event-log" id="eventLog">Event log will appear here...</div>
+                
+                <div class="image-container">
+                    <nxa-image style="width: 100%; height: 400px" 
+                               data-features="slideshow arrows indicators fullsize"
+                               id="eventExample">
+                        <img src="https://picsum.photos/800/400?random=20" alt="Event Slide 1">
+                        <img src="https://picsum.photos/800/400?random=21" alt="Event Slide 2">
+                        <img src="https://picsum.photos/800/400?random=22" alt="Event Slide 3">
+                    </nxa-image>
+                </div>
+            </div>
+        </div>
+
+        <!-- Debug Mode Section -->
+        <div class="section">
+            <h2>🐞 Debug Mode Example</h2>
+            
+            <div class="example">
+                <h4>Debug Mode Enabled</h4>
+                <p>This component has debug mode enabled. Check the browser console for detailed logging information.</p>
+                <div class="code-block">&lt;nxa-image style="width: 100%; height: 300px" 
+           data-features="slideshow arrows indicators" 
+           debug="true"&gt;
+    &lt;img src="https://picsum.photos/800/300?random=23" alt="Debug Slide 1"&gt;
+    &lt;img src="https://picsum.photos/800/300?random=24" alt="Debug Slide 2"&gt;
+&lt;/nxa-image&gt;</div>
+                <div class="image-container">
+                    <nxa-image style="width: 100%; height: 300px" 
+                               data-features="slideshow arrows indicators" 
+                               debug="true">
+                        <img src="https://picsum.photos/800/300?random=23" alt="Debug Slide 1">
+                        <img src="https://picsum.photos/800/300?random=24" alt="Debug Slide 2">
+                    </nxa-image>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Import the component -->
+    <script type="module" src="/src/index.ts"></script>
+    
+    <script>
+        let eventLogElement;
+        let eventExampleComponent;
+        
+        // Initialize when DOM is loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            eventLogElement = document.getElementById('eventLog');
+            eventExampleComponent = document.getElementById('eventExample');
+            
+            console.log('🚀 NxaImage Test Environment loaded');
+            
+            // Setup event callbacks for the event example
+            if (eventExampleComponent) {
+                setupEventCallbacks();
+            }
+            
+            // Check component availability
+            setTimeout(function() {
+                if (customElements.get('nxa-image')) {
+                    logEvent('✅ NxaImage component is available and ready');
+                } else {
+                    logEvent('⚠️ NxaImage component not found. Make sure to import it.');
+                }
+            }, 500);
+        });
+        
+        function setupEventCallbacks() {
+            eventExampleComponent.onSlideChange = (index, image) => {
+                const message = `🔄 Slide changed to index ${index}`;
+                console.log(message);
+                logEvent(message);
+            };
+
+            eventExampleComponent.onFullscreenEnter = (image) => {
+                const message = '🔍 Entered fullscreen mode';
+                console.log(message);
+                logEvent(message);
+            };
+
+            eventExampleComponent.onFullscreenExit = (image) => {
+                const message = '❌ Exited fullscreen mode';
+                console.log(message);
+                logEvent(message);
+            };
+
+            eventExampleComponent.onSlideshowPause = (image) => {
+                const message = '⏸️ Slideshow paused';
+                console.log(message);
+                logEvent(message);
+            };
+
+            eventExampleComponent.onSlideshowResume = (image) => {
+                const message = '▶️ Slideshow resumed';
+                console.log(message);
+                logEvent(message);
+            };
+
+            eventExampleComponent.onImageClick = (image, event) => {
+                const message = '🖱️ Image clicked';
+                console.log(message, event);
+                logEvent(message);
+            };
+        }
+        
+        function logEvent(message) {
+            if (eventLogElement) {
+                const timestamp = new Date().toLocaleTimeString();
+                const logEntry = `[${timestamp}] ${message}\n`;
+                eventLogElement.textContent += logEntry;
+                eventLogElement.scrollTop = eventLogElement.scrollHeight;
+            }
+        }
+        
+        function clearEventLog() {
+            if (eventLogElement) {
+                eventLogElement.textContent = 'Event log cleared...\n';
+            }
+        }
+        
+        function triggerSlideChange() {
+            if (eventExampleComponent && typeof eventExampleComponent.nextSlide === 'function') {
+                eventExampleComponent.nextSlide();
+            } else {
+                logEvent('⚠️ nextSlide method not available');
+            }
+        }
+        
+        function pauseSlideshow() {
+            if (eventExampleComponent && typeof eventExampleComponent.pauseSlideshow === 'function') {
+                eventExampleComponent.pauseSlideshow();
+            } else {
+                logEvent('⚠️ pauseSlideshow method not available');
+            }
+        }
+        
+        function resumeSlideshow() {
+            if (eventExampleComponent && typeof eventExampleComponent.resumeSlideshow === 'function') {
+                eventExampleComponent.resumeSlideshow();
+            } else {
+                logEvent('⚠️ resumeSlideshow method not available');
+            }
+        }
+    </script>
+</body>
+</html>

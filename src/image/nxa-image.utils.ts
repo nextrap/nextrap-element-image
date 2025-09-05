@@ -461,7 +461,24 @@ export const createFullsizeView = (img: HTMLImageElement, isMobileDevice: boolea
     };
 
     const handleImageClick = (e: MouseEvent) => {
-        e.stopPropagation();
+        cleanup();
+    };
+
+    const handleContainerClick = (e: MouseEvent) => {
+        const target = e.target as HTMLElement;
+        
+        // Don't close if clicking on navigation buttons
+        if (target.classList.contains('nxa-fullsize-nav-btn') || 
+            target.closest('.nxa-fullsize-nav-btn')) {
+            return;
+        }
+        
+        // Don't close if clicking on close button (it has its own handler)
+        if (target === closeBtn || target.closest('.nxa-fullsize-close-btn')) {
+            return;
+        }
+        
+        // Close fullscreen for any other click
         cleanup();
     };
 
@@ -578,6 +595,7 @@ export const createFullsizeView = (img: HTMLImageElement, isMobileDevice: boolea
     // Add event listeners
     fullSizeImg.addEventListener("click", handleImageClick, true);
     darkOverlay.addEventListener("click", cleanup);
+    container.addEventListener("click", handleContainerClick);
     closeBtn.addEventListener("click", handleCloseClick);
     container.addEventListener("touchstart", handleTouchStart, { passive: true });
     container.addEventListener("touchmove", handleTouchMove, { passive: false });
